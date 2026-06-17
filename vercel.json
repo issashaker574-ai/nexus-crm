@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "name": "nexus-crm",
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "framework": null
+}
