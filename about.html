@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Über uns — NEXUS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#06060F;--surface:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);
+  --text:rgba(255,255,255,.55);--text-hi:rgba(255,255,255,.85);
+  --blue:#5E6AD2;--blue-light:#818CF8;--green:#10B981;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(6,6,15,.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.nav-mark{width:30px;height:30px;background:linear-gradient(135deg,#5E6AD2,#818CF8);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;}
+.nav-name{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.nav-ai{font-size:9px;font-weight:700;color:var(--blue-light);letter-spacing:1.5px;background:rgba(94,106,210,.12);border:1px solid rgba(94,106,210,.2);padding:2px 6px;border-radius:4px;}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{font-size:14px;font-weight:500;color:var(--text);transition:color .15s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.btn-ghost{font-size:14px;font-weight:600;color:rgba(255,255,255,.65);padding:8px 16px;border-radius:8px;border:1px solid var(--border);transition:all .15s;}
+.btn-ghost:hover{background:rgba(255,255,255,.06);color:#fff;}
+.btn-cta{background:linear-gradient(135deg,#5E6AD2,#818CF8);color:#fff;font-size:13.5px;font-weight:700;padding:9px 20px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;text-decoration:none;}
+.btn-cta:hover{opacity:.9;transform:translateY(-1px);}
+.btn-lang{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.55);font-size:11px;font-weight:700;padding:7px 13px;border-radius:7px;cursor:pointer;letter-spacing:.8px;transition:all .15s;font-family:inherit;}
+.btn-lang:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.28);color:#fff;}
+
+/* ── HERO ── */
+.about-hero{padding:160px 40px 100px;max-width:1100px;margin:0 auto;text-align:center;position:relative;}
+.about-hero::before{content:'';position:absolute;width:600px;height:600px;top:-100px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(94,106,210,.18) 0%,transparent 70%);pointer-events:none;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(94,106,210,.1);border:1px solid rgba(94,106,210,.25);color:var(--blue-light);font-size:11px;font-weight:700;letter-spacing:1.2px;padding:5px 14px;border-radius:20px;text-transform:uppercase;margin-bottom:28px;}
+.about-hero h1{font-size:62px;font-weight:900;line-height:1.05;letter-spacing:-1px;margin-bottom:20px;}
+.about-hero h1 .grad{background:linear-gradient(90deg,#818CF8,#5E6AD2,#34D399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.about-hero p{font-size:18px;color:var(--text);line-height:1.75;max-width:600px;margin:0 auto;}
+
+/* ── STORY ── */
+.story-section{padding:80px 40px;max-width:900px;margin:0 auto;}
+.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;}
+.story-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--blue-light);text-transform:uppercase;margin-bottom:12px;}
+.story-grid h2{font-size:36px;font-weight:900;line-height:1.15;letter-spacing:-.5px;margin-bottom:22px;}
+.story-grid p{font-size:15.5px;color:var(--text);line-height:1.8;margin-bottom:16px;}
+.story-quote{margin:32px 0;padding:24px 28px;background:rgba(94,106,210,.07);border-left:3px solid var(--blue);border-radius:0 12px 12px 0;}
+.story-quote blockquote{font-size:17px;font-style:italic;color:rgba(255,255,255,.8);line-height:1.65;margin-bottom:10px;}
+.story-quote cite{font-size:12px;color:var(--text);font-style:normal;font-weight:600;}
+.story-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px;}
+.story-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;}
+.story-stat-val{font-size:32px;font-weight:900;background:linear-gradient(135deg,#818CF8,#34D399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;}
+.story-stat-label{font-size:12px;color:var(--text);}
+.story-img-side{position:relative;}
+.story-card-stack{position:relative;height:420px;}
+.founder-card{position:absolute;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;backdrop-filter:blur(10px);}
+.founder-card.main{inset:0;display:flex;flex-direction:column;justify-content:flex-end;}
+.founder-card.main .fc-bg{position:absolute;inset:0;background:linear-gradient(135deg,rgba(94,106,210,.15),rgba(16,185,129,.1));border-radius:20px;}
+.founder-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#5E6AD2,#818CF8);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#fff;margin-bottom:14px;position:relative;z-index:1;}
+.founder-name{font-size:18px;font-weight:800;color:#fff;position:relative;z-index:1;}
+.founder-role{font-size:12px;color:var(--blue-light);font-weight:600;margin-top:2px;position:relative;z-index:1;}
+.founder-card.mini{right:-20px;bottom:20px;width:180px;text-align:center;padding:18px;}
+.mini-icon{font-size:28px;margin-bottom:8px;}
+.mini-val{font-size:22px;font-weight:900;color:#fff;}
+.mini-label{font-size:11px;color:var(--text);}
+.founder-card.mini2{left:-10px;top:20px;width:160px;padding:16px;}
+.mini2-chip{font-size:9px;font-weight:700;letter-spacing:1px;color:var(--blue-light);text-transform:uppercase;margin-bottom:6px;}
+.mini2-text{font-size:12px;color:var(--text-hi);font-weight:500;}
+
+/* ── ORBITAL TIMELINE ── */
+.timeline-section{padding:80px 40px 100px;text-align:center;position:relative;overflow:hidden;}
+.timeline-section::before{content:'';position:absolute;width:800px;height:800px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(94,106,210,.08) 0%,transparent 65%);pointer-events:none;}
+.timeline-header{margin-bottom:60px;}
+.timeline-header .section-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--blue-light);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;}
+.timeline-header h2{font-size:42px;font-weight:900;letter-spacing:-.5px;margin-bottom:12px;}
+.timeline-header p{font-size:16px;color:var(--text);}
+
+/* Orbital container */
+.ot-container{position:relative;width:520px;height:520px;margin:0 auto;}
+.ot-center-group{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;}
+.ot-core{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 0 32px rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#06060F;}
+.ot-pulse{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.15);top:50%;left:50%;transform:translate(-50%,-50%);animation:otPing 2.5s ease-out infinite;}
+.ot-pulse:nth-child(2){width:70px;height:70px;animation-delay:0s;}
+.ot-pulse:nth-child(3){width:96px;height:96px;animation-delay:.6s;}
+.ot-pulse:nth-child(4){width:122px;height:122px;animation-delay:1.2s;}
+@keyframes otPing{0%{opacity:.8;transform:translate(-50%,-50%) scale(.9);}100%{opacity:0;transform:translate(-50%,-50%) scale(1.1);}}
+.ot-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;height:420px;border-radius:50%;border:1px dashed rgba(255,255,255,.1);}
+.ot-ring-inner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:280px;height:280px;border-radius:50%;border:1px solid rgba(255,255,255,.04);}
+
+/* Nodes */
+.ot-node{position:absolute;top:50%;left:50%;cursor:pointer;user-select:none;}
+.ot-node-dot{width:46px;height:46px;border-radius:50%;background:rgba(6,6,15,.85);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);transition:border-color .25s,box-shadow .25s,background .25s;font-size:18px;}
+.ot-node:hover .ot-node-dot,.ot-node.active .ot-node-dot{border-color:rgba(255,255,255,.8);box-shadow:0 0 22px rgba(255,255,255,.25);background:rgba(255,255,255,.1);}
+.ot-node.completed .ot-node-dot{border-color:rgba(16,185,129,.6);}
+.ot-node.in-progress .ot-node-dot{border-color:rgba(245,158,11,.6);}
+.ot-node-year{position:absolute;top:30px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;color:rgba(255,255,255,.45);white-space:nowrap;letter-spacing:.5px;text-transform:uppercase;}
+
+/* Info card */
+.ot-card{position:absolute;top:54px;left:50%;transform:translateX(-50%);width:220px;background:rgba(8,8,22,.97);border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:18px 16px 14px;display:none;z-index:300;box-shadow:0 20px 60px rgba(0,0,0,.7);text-align:left;}
+.ot-card.open{display:block;animation:otCardIn .2s ease;}
+@keyframes otCardIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.ot-card-close{position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,.35);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px;}
+.ot-card-close:hover{color:#fff;}
+.ot-card-year{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-light);margin-bottom:6px;}
+.ot-card-title{font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;}
+.ot-card-body{font-size:12px;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:12px;}
+.ot-energy-label{font-size:9px;color:rgba(255,255,255,.25);margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px;}
+.ot-energy-track{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.ot-energy-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#5E6AD2,#818CF8);}
+.ot-status{display:inline-block;font-size:9px;font-weight:800;padding:3px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.6px;}
+.ot-status.completed{background:rgba(16,185,129,.12);color:#34D399;border:1px solid rgba(16,185,129,.2);}
+.ot-status.in-progress{background:rgba(245,158,11,.1);color:#FBBF24;border:1px solid rgba(245,158,11,.18);}
+.ot-status.upcoming{background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.08);}
+
+/* timeline hint */
+.ot-hint{margin-top:24px;font-size:12px;color:rgba(255,255,255,.3);}
+
+/* ── VALUES ── */
+.values-section{padding:80px 40px;max-width:1100px;margin:0 auto;}
+.values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;}
+.value-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;transition:border-color .2s;}
+.value-card:hover{border-color:rgba(255,255,255,.18);}
+.value-icon{font-size:28px;margin-bottom:14px;}
+.value-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;}
+.value-desc{font-size:14px;color:var(--text);line-height:1.65;}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:48px 40px 32px;max-width:1200px;margin:0 auto;}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-top:32px;padding-top:28px;border-top:1px solid var(--border);}
+.footer-copy{font-size:12.5px;color:rgba(255,255,255,.25);}
+.footer-legal{display:flex;gap:20px;}
+.footer-legal a{font-size:12.5px;color:rgba(255,255,255,.25);transition:color .15s;}
+.footer-legal a:hover{color:rgba(255,255,255,.6);}
+.footer-back{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--blue-light);margin-bottom:24px;transition:gap .15s;}
+.footer-back:hover{gap:12px;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:2000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#0D0D1F;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:36px;width:100%;max-width:420px;position:relative;box-shadow:0 32px 80px rgba(0,0,0,.6);}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1;transition:color .15s;}
+.modal-close:hover{color:#fff;}
+.modal-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;}
+.modal-sub{font-size:14px;color:var(--text);}
+.field-label{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin:14px 0 6px;letter-spacing:.3px;}
+.field-input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:11px 14px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;}
+.field-input:focus{border-color:rgba(94,106,210,.6);background:rgba(94,106,210,.04);}
+.modal-submit{width:100%;margin-top:18px;padding:13px;background:linear-gradient(135deg,#5E6AD2,#818CF8);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.modal-submit:hover{opacity:.9;}
+.modal-or{text-align:center;margin:14px 0;font-size:12px;color:rgba(255,255,255,.25);}
+.modal-google{width:100%;padding:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .15s;}
+.modal-google:hover{background:rgba(255,255,255,.1);}
+.modal-demo{text-align:center;margin-top:14px;font-size:11.5px;color:rgba(255,255,255,.25);}
+.modal-demo code{font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,.4);}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+/* ── SECTION HELPERS ── */
+.section-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--blue-light);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;}
+.section-title{font-size:42px;font-weight:900;letter-spacing:-.5px;margin-bottom:14px;}
+.section-sub{font-size:16px;color:var(--text);line-height:1.7;}
+
+@media(max-width:768px){
+  nav{padding:0 20px;}
+  .nav-links{display:none;}
+  .about-hero h1{font-size:36px;}
+  .story-grid{grid-template-columns:1fr;}
+  .story-img-side{display:none;}
+  .values-grid{grid-template-columns:1fr;}
+  .ot-container{width:340px;height:340px;}
+  .ot-ring{width:280px!important;height:280px!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-logo" href="landing.html">
+    <div class="nav-mark">N</div>
+    <span class="nav-name">NEXUS</span>
+    <span class="nav-ai">AI</span>
+  </a>
+  <div class="nav-links">
+    <a href="landing.html#tools">Tools</a>
+    <a href="landing.html#solutions">Lösungen</a>
+    <a href="landing.html#pricing">Pricing</a>
+    <a href="about.html" class="active" data-t="nav_about">Über uns</a>
+  </div>
+  <div class="nav-right">
+    <a class="btn-ghost" href="landing.html" data-t="back_landing">← Zurück zur Startseite</a>
+    <a class="btn-cta" href="#" onclick="openModal();return false;" data-t="nav_beta">Beta-Zugang anfragen →</a>
+    <button class="btn-lang" id="langBtn" onclick="toggleLang()">EN</button>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="about-hero">
+  <div class="hero-badge">
+    <span>✦</span>
+    <span data-t="about_badge">Unsere Geschichte</span>
+  </div>
+  <h1>
+    <span data-t="about_h1a">Gegründet aus</span><br>
+    <span class="grad" data-t="about_h1b">Frustration.</span><br>
+    <span data-t="about_h1c">Gewachsen durch Vertrauen.</span>
+  </h1>
+  <p data-t="about_sub">Wir haben NEXUS nicht gebaut, weil wir Software lieben. Wir haben es gebaut, weil wir die bestehende Software gehasst haben.</p>
+</section>
+
+<!-- ══ STORY ══ -->
+<section style="padding:20px 40px 80px;">
+  <div class="story-grid" style="max-width:1050px;margin:0 auto;">
+    <div class="reveal">
+      <div class="story-label" data-t="story_label">Die Gründungsgeschichte</div>
+      <h2 data-t="story_h2">Von 7 Tools zu einem System</h2>
+      <p data-t="story_p1">Es war der Montag, den Issa Shaker nie vergessen wird. Ein Montagmorgen im Sommer 2021, und er saß wieder einmal vor sieben offenen Browser-Tabs: das CRM, das Kassensystem, die Lagerverwaltung, die Buchhaltungssoftware, das E-Mail-Tool, die Auftragsabwicklung, das Reporting-Dashboard. Sieben verschiedene Systeme. Sieben verschiedene Logins. Sieben verschiedene Wahrheiten.</p>
+      <p data-t="story_p2">Als Inhaber eines mittelständischen Handelsunternehmens in Berlin zahlte Issa damals über €2.200 pro Monat für diese Tools — und trotzdem musste jeder Kundendatensatz manuell in drei Systeme eingepflegt werden. Bestände stimmten nicht mit dem Kassensystem überein. Rechnungen gingen verloren. Der Kundenservice wusste nicht, was der Vertrieb bereits versprochen hatte.</p>
+      <div class="story-quote">
+        <blockquote data-t="story_quote">"Ich wollte einfach ein System, das alles kann. Vertrieb, Lager, Kasse, Buchhaltung — verbunden, intelligent, mit einem Assistenten, der mitdenkt. Das gab es nicht. Also haben wir es gebaut."</blockquote>
+        <cite data-t="story_cite">— Issa Shaker, Gründer & CEO von NEXUS</cite>
+      </div>
+      <p data-t="story_p3">Im Januar 2022 schrieb Issa die ersten Zeilen Code. Sechs Monate später hatte das Team seine ersten zwölf Beta-Kunden. Ein Jahr danach — über 200 Unternehmen. Heute vertrauen mehr als 2.400 Unternehmen in der DACH-Region auf NEXUS als ihre zentrale Business-Plattform.</p>
+    </div>
+    <div class="story-img-side reveal reveal-delay-1">
+      <div class="story-card-stack">
+        <!-- main founder card -->
+        <div class="founder-card main">
+          <div class="fc-bg"></div>
+          <div class="founder-avatar">I</div>
+          <div class="founder-name">Issa Shaker</div>
+          <div class="founder-role" data-t="founder_role">Gründer & CEO</div>
+        </div>
+        <!-- mini stat card -->
+        <div class="founder-card mini">
+          <div class="mini-icon">🚀</div>
+          <div class="mini-val">2.400+</div>
+          <div class="mini-label" data-t="mini_customers">Kunden</div>
+        </div>
+        <!-- mini badge card -->
+        <div class="founder-card mini2">
+          <div class="mini2-chip">Berlin 🇩🇪</div>
+          <div class="mini2-text" data-t="mini_founded">Gegründet 2022</div>
+        </div>
+      </div>
+      <div class="story-stats reveal">
+        <div class="story-stat">
+          <div class="story-stat-val">2.400+</div>
+          <div class="story-stat-label" data-t="stat1">Aktive Unternehmen</div>
+        </div>
+        <div class="story-stat">
+          <div class="story-stat-val">€2M</div>
+          <div class="story-stat-label" data-t="stat2">Seed-Finanzierung 2023</div>
+        </div>
+        <div class="story-stat">
+          <div class="story-stat-val">34%</div>
+          <div class="story-stat-label" data-t="stat3">Ø Umsatzwachstum der Kunden</div>
+        </div>
+        <div class="story-stat">
+          <div class="story-stat-val">8h</div>
+          <div class="story-stat-label" data-t="stat4">Ø Zeitersparnis pro Woche</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ORBITAL TIMELINE ══ -->
+<section class="timeline-section">
+  <div class="timeline-header reveal">
+    <div class="section-tag" data-t="tl_tag">Unsere Reise</div>
+    <h2 class="section-title" data-t="tl_title">Meilensteine</h2>
+    <p data-t="tl_sub">Klicken Sie auf einen Knoten um mehr zu erfahren.</p>
+  </div>
+  <div class="ot-container" id="orbitalTimeline">
+    <div class="ot-ring"></div>
+    <div class="ot-ring-inner"></div>
+    <div class="ot-center-group">
+      <div class="ot-pulse"></div>
+      <div class="ot-pulse"></div>
+      <div class="ot-pulse"></div>
+      <div class="ot-core">N</div>
+    </div>
+    <!-- Nodes injected by JS -->
+  </div>
+  <p class="ot-hint" data-t="tl_hint">↻ Dreht sich automatisch · Klicken zum Pausieren</p>
+</section>
+
+<!-- ══ VALUES ══ -->
+<section class="values-section">
+  <div class="reveal" style="text-align:center;margin-bottom:0;">
+    <div class="section-tag" data-t="val_tag">Unsere Werte</div>
+    <h2 class="section-title" data-t="val_title">Was uns antreibt</h2>
+    <p class="section-sub" data-t="val_sub">Drei Prinzipien, die alles bestimmen, was wir bauen.</p>
+  </div>
+  <div class="values-grid">
+    <div class="value-card reveal">
+      <div class="value-icon">🔗</div>
+      <div class="value-title" data-t="v1_title">Alles verbunden</div>
+      <div class="value-desc" data-t="v1_desc">Kein Datensilo. Kein manueller Export. Jede Information fließt automatisch dorthin, wo sie gebraucht wird — in Echtzeit, ohne Reibung.</div>
+    </div>
+    <div class="value-card reveal reveal-delay-1">
+      <div class="value-icon">🤖</div>
+      <div class="value-title" data-t="v2_title">KI als Copilot, nicht als Buzzword</div>
+      <div class="value-desc" data-t="v2_desc">Unser KI-Assistent analysiert, empfiehlt und automatisiert — aber die Entscheidungen trifft immer der Mensch. Intelligenz als Werkzeug, nicht als Ersatz.</div>
+    </div>
+    <div class="value-card reveal reveal-delay-2">
+      <div class="value-icon">🏗️</div>
+      <div class="value-title" data-t="v3_title">Gebaut für den Mittelstand</div>
+      <div class="value-desc" data-t="v3_desc">Keine Enterprise-Komplexität, die 6 Monate Implementierung braucht. NEXUS ist in 5 Minuten live und skaliert mit Ihrem Wachstum — ohne IT-Abteilung.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <a class="footer-back" href="landing.html">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    <span data-t="back_landing">Zurück zur Startseite</span>
+  </a>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 NEXUS Business Platform GmbH. Alle Rechte vorbehalten.</div>
+    <div class="footer-legal">
+      <a href="#">Datenschutz</a>
+      <a href="#">Impressum</a>
+      <a href="#">AGB</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div style="text-align:center;margin-bottom:22px;">
+      <div style="width:46px;height:46px;background:linear-gradient(135deg,#5E6AD2,#818CF8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;margin:0 auto 12px;">N</div>
+      <div class="modal-title" data-t="modal_title">Beta-Zugang anfragen</div>
+      <div class="modal-sub" data-t="modal_sub">Noch 47 Plätze — sichern Sie sich jetzt Ihren Zugang</div>
+    </div>
+    <label class="field-label" data-t="modal_name">Name</label>
+    <input class="field-input" type="text" placeholder="Max Mustermann">
+    <label class="field-label" data-t="modal_email">E-Mail-Adresse</label>
+    <input class="field-input" type="email" placeholder="max@beispiel.de">
+    <label class="field-label" data-t="modal_company">Unternehmen</label>
+    <input class="field-input" type="text" placeholder="Musterfirma GmbH">
+    <button class="modal-submit" onclick="goApp()" data-t="modal_submit">Jetzt Beta-Zugang sichern →</button>
+    <div class="modal-or"><span data-t="modal_or">oder direkt einloggen</span></div>
+    <button class="modal-google" onclick="goApp()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      <span data-t="modal_google">Mit Google fortfahren</span>
+    </button>
+    <div class="modal-demo">Demo-Login: <code>issashaker574@gmail.com / nexus2026</code></div>
+  </div>
+</div>
+
+<script>
+// ── Translations ──
+const TR = {
+  de: {
+    nav_about:'Über uns', nav_beta:'Beta-Zugang anfragen →', back_landing:'← Zurück zur Startseite',
+    about_badge:'Unsere Geschichte',
+    about_h1a:'Gegründet aus', about_h1b:'Frustration.', about_h1c:'Gewachsen durch Vertrauen.',
+    about_sub:'Wir haben NEXUS nicht gebaut, weil wir Software lieben. Wir haben es gebaut, weil wir die bestehende Software gehasst haben.',
+    story_label:'Die Gründungsgeschichte',
+    story_h2:'Von 7 Tools zu einem System',
+    story_p1:'Es war der Montag, den Issa Shaker nie vergessen wird. Ein Montagmorgen im Sommer 2021 — sieben offene Browser-Tabs, sieben verschiedene Logins, sieben verschiedene Wahrheiten. CRM, Kassensystem, Lagerverwaltung, Buchhaltung, E-Mail, Auftragsabwicklung, Reporting. Alles getrennt. Nichts verbunden.',
+    story_p2:'Als Inhaber eines mittelständischen Handelsunternehmens in Berlin zahlte Issa damals über €2.200 pro Monat für diese Tools — und trotzdem musste jeder Kundendatensatz manuell in drei Systeme eingepflegt werden. Bestände stimmten nicht. Rechnungen gingen verloren. Der Kundenservice wusste nicht, was der Vertrieb versprochen hatte.',
+    story_quote:'"Ich wollte einfach ein System, das alles kann. Vertrieb, Lager, Kasse, Buchhaltung — verbunden, intelligent, mit einem Assistenten, der mitdenkt. Das gab es nicht. Also haben wir es gebaut."',
+    story_cite:'— Issa Shaker, Gründer & CEO von NEXUS',
+    story_p3:'Im Januar 2022 schrieb Issa die ersten Zeilen Code. Sechs Monate später: zwölf Beta-Kunden. Ein Jahr danach: über 200 Unternehmen. Heute vertrauen mehr als 2.400 Unternehmen in der DACH-Region auf NEXUS.',
+    founder_role:'Gründer & CEO',
+    mini_customers:'Aktive Kunden', mini_founded:'Gegründet 2022',
+    stat1:'Aktive Unternehmen', stat2:'Seed-Finanzierung 2023', stat3:'Ø Umsatzwachstum', stat4:'Ø Zeitersparnis/Woche',
+    tl_tag:'Unsere Reise', tl_title:'Meilensteine', tl_sub:'Klicken Sie auf einen Knoten um mehr zu erfahren.', tl_hint:'↻ Dreht sich automatisch · Klicken zum Pausieren',
+    val_tag:'Unsere Werte', val_title:'Was uns antreibt', val_sub:'Drei Prinzipien, die alles bestimmen, was wir bauen.',
+    v1_title:'Alles verbunden', v1_desc:'Kein Datensilo. Kein manueller Export. Jede Information fließt automatisch dorthin, wo sie gebraucht wird.',
+    v2_title:'KI als Copilot, nicht als Buzzword', v2_desc:'Unser KI-Assistent analysiert und empfiehlt — aber die Entscheidungen trifft immer der Mensch.',
+    v3_title:'Gebaut für den Mittelstand', v3_desc:'Keine Enterprise-Komplexität. NEXUS ist in 5 Minuten live und skaliert mit Ihrem Wachstum.',
+    modal_title:'Beta-Zugang anfragen', modal_sub:'Noch 47 Plätze — sichern Sie sich jetzt Ihren Zugang',
+    modal_name:'Name', modal_email:'E-Mail-Adresse', modal_company:'Unternehmen',
+    modal_submit:'Jetzt Beta-Zugang sichern →', modal_or:'oder direkt einloggen', modal_google:'Mit Google fortfahren',
+  },
+  en: {
+    nav_about:'About Us', nav_beta:'Request Beta Access →', back_landing:'← Back to Homepage',
+    about_badge:'Our Story',
+    about_h1a:'Built from', about_h1b:'Frustration.', about_h1c:'Grown through Trust.',
+    about_sub:"We didn't build NEXUS because we love software. We built it because we hated the software that existed.",
+    story_label:'The Founding Story',
+    story_h2:'From 7 Tools to One System',
+    story_p1:'It was the Monday Issa Shaker will never forget. A Monday morning in the summer of 2021 — seven open browser tabs, seven different logins, seven different sources of truth. CRM, POS, inventory, accounting, email, order management, reporting. All separate. Nothing connected.',
+    story_p2:'As the owner of a mid-sized trading company in Berlin, Issa was paying over €2,200 per month for these tools — yet every customer record had to be manually entered into three systems. Stock levels didn\'t match the POS. Invoices got lost. Customer service didn\'t know what sales had already promised.',
+    story_quote:'"I just wanted one system that does it all. Sales, warehouse, POS, accounting — connected, intelligent, with an assistant that thinks ahead. It didn\'t exist. So we built it."',
+    story_cite:'— Issa Shaker, Founder & CEO of NEXUS',
+    story_p3:'In January 2022, Issa wrote the first lines of code. Six months later: twelve beta customers. A year after that: over 200 companies. Today, more than 2,400 businesses across the DACH region trust NEXUS.',
+    founder_role:'Founder & CEO',
+    mini_customers:'Active Clients', mini_founded:'Founded 2022',
+    stat1:'Active Companies', stat2:'Seed Round 2023', stat3:'Avg. Revenue Growth', stat4:'Avg. Time Saved/Week',
+    tl_tag:'Our Journey', tl_title:'Milestones', tl_sub:'Click a node to learn more.', tl_hint:'↻ Auto-rotating · Click to pause',
+    val_tag:'Our Values', val_title:'What Drives Us', val_sub:'Three principles that shape everything we build.',
+    v1_title:'Everything Connected', v1_desc:'No data silos. No manual exports. Every piece of information flows automatically where it\'s needed.',
+    v2_title:'AI as Copilot, Not Buzzword', v2_desc:'Our AI assistant analyzes and recommends — but humans always make the decisions.',
+    v3_title:'Built for SMBs', v3_desc:'No enterprise complexity requiring 6-month implementations. NEXUS is live in 5 minutes and scales with your growth.',
+    modal_title:'Request Beta Access', modal_sub:'47 spots left — secure yours now',
+    modal_name:'Name', modal_email:'Email Address', modal_company:'Company',
+    modal_submit:'Secure Beta Access →', modal_or:'or log in directly', modal_google:'Continue with Google',
+  }
+};
+
+let currentLang = 'de';
+function toggleLang() {
+  currentLang = currentLang === 'de' ? 'en' : 'de';
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const k = el.dataset.t;
+    if (TR[currentLang][k] !== undefined) el.innerHTML = TR[currentLang][k];
+  });
+  document.getElementById('langBtn').textContent = currentLang === 'de' ? 'EN' : 'DE';
+  // Rebuild timeline labels in new language
+  rebuildTimeline();
+}
+
+// ── Modal ──
+function openModal(){ document.getElementById('modal').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); document.body.style.overflow=''; }
+function goApp(){ window.location.href = 'http://localhost:5500'; }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// ── Scroll reveal ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }});
+}, {threshold: 0.1});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ── Orbital Timeline ──
+const TIMELINE = [
+  {
+    id:1, icon:'🚀', year:'Jan 2022', status:'completed', energy:100,
+    title:{de:'Gründung',en:'Founded'},
+    body:{de:'Issa Shaker gründet NEXUS in Berlin — mit einer klaren Vision: ein System für alles. Die ersten Zeilen Code entstehen in einem kleinen Büro in Mitte.',en:'Issa Shaker founds NEXUS in Berlin with one clear vision: one system for everything. First lines of code written in a small office in Mitte.'}
+  },
+  {
+    id:2, icon:'🧪', year:'Jun 2022', status:'completed', energy:88,
+    title:{de:'Erste Beta',en:'First Beta'},
+    body:{de:'12 mutige Pilotkunden testen die erste Version von NEXUS. Feedback ist ehrlich, manchmal schmerzhaft — und Gold wert. Die Kernmodule CRM und ERP entstehen.',en:'12 brave pilot customers test the first version of NEXUS. Feedback is honest, sometimes painful — and worth its weight in gold. Core CRM and ERP modules take shape.'}
+  },
+  {
+    id:3, icon:'🎯', year:'Jan 2023', status:'completed', energy:92,
+    title:{de:'Offizieller Launch',en:'Official Launch'},
+    body:{de:'NEXUS geht offiziell live. €2M Seed-Runde abgeschlossen. 50+ Unternehmen am ersten Tag. Der erste Artikel erscheint im Gründerszene Magazin.',en:'NEXUS officially launches. €2M seed round closed. 50+ companies on day one. First article appears in Gründerszene Magazine.'}
+  },
+  {
+    id:4, icon:'🤖', year:'Jun 2023', status:'completed', energy:95,
+    title:{de:'KI-Copilot',en:'AI Copilot'},
+    body:{de:'Integration des KI-Assistenten: automatische Angebotserstellung, Bestandsprognosen, Umsatzvorhersagen. Der erste Copilot, der wirklich die Sprache des Mittelstands spricht.',en:'AI Assistant integrated: automatic quote generation, inventory forecasting, revenue predictions. The first copilot that truly speaks the language of SMBs.'}
+  },
+  {
+    id:5, icon:'🏆', year:'Jan 2024', status:'completed', energy:85,
+    title:{de:'500+ Kunden',en:'500+ Clients'},
+    body:{de:'Meilenstein: 500 aktive Unternehmen nutzen NEXUS als ihre Hauptplattform. Durchschnittliches Umsatzwachstum der Kunden: +28%. Kundensupport-Team verdoppelt.',en:'Milestone: 500 active companies use NEXUS as their main platform. Average customer revenue growth: +28%. Customer support team doubles in size.'}
+  },
+  {
+    id:6, icon:'🌍', year:'Jun 2024', status:'completed', energy:80,
+    title:{de:'1.000 Kunden',en:'1,000 Clients'},
+    body:{de:'1.000 aktive Kunden! Expansion nach Österreich und in die Schweiz. NEXUS wird in allen DACH-Ländern als führende KMU-Plattform anerkannt.',en:'1,000 active customers! Expansion to Austria and Switzerland. NEXUS recognized across all DACH countries as the leading SMB platform.'}
+  },
+  {
+    id:7, icon:'🏢', year:'Jan 2025', status:'completed', energy:78,
+    title:{de:'Enterprise-Tier',en:'Enterprise Tier'},
+    body:{de:'Launch des Enterprise-Tiers mit dedizierten Servern, SLA-Garantien, API-Zugang und Custom Reporting. Erste Unternehmenskunden mit 200+ Nutzern ongeboardet.',en:'Enterprise tier launched with dedicated servers, SLA guarantees, API access and custom reporting. First enterprise customers with 200+ users onboarded.'}
+  },
+  {
+    id:8, icon:'⚡', year:'2026', status:'in-progress', energy:55,
+    title:{de:'NEXUS 2.0',en:'NEXUS 2.0'},
+    body:{de:'Die nächste Generation der Plattform: neue KI-Architektur, Echtzeit-Datenströme, native Mobile-Apps und ein komplett überarbeitetes UX — gebaut mit Feedback von 2.400+ Kunden.',en:'Next-generation platform: new AI architecture, real-time data streams, native mobile apps and a completely redesigned UX — built with feedback from 2,400+ customers.'}
+  },
+];
+
+let orbitAngle = 0;
+let orbitAuto = true;
+let expandedId = null;
+let rafId = null;
+const RADIUS = 190;
+
+function buildNode(item) {
+  const node = document.createElement('div');
+  node.className = `ot-node ${item.status}`;
+  node.id = `otn-${item.id}`;
+  node.innerHTML = `
+    <div class="ot-node-dot">${item.icon}</div>
+    <div class="ot-node-year">${item.year}</div>
+    <div class="ot-card" id="otc-${item.id}">
+      <button class="ot-card-close" onclick="collapseNode(event)">×</button>
+      <div class="ot-card-year">${item.year}</div>
+      <div class="ot-card-title">${item.title[currentLang]}</div>
+      <div class="ot-card-body">${item.body[currentLang]}</div>
+      <div class="ot-energy-label">Fortschritt / Progress</div>
+      <div class="ot-energy-track"><div class="ot-energy-fill" style="width:${item.energy}%"></div></div>
+      <span class="ot-status ${item.status}">${item.status === 'completed' ? '✓ Abgeschlossen' : item.status === 'in-progress' ? '⚡ In Arbeit' : 'Geplant'}</span>
+    </div>
+  `;
+  node.querySelector('.ot-node-dot').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleNode(item.id);
+  });
+  return node;
+}
+
+function rebuildTimeline() {
+  const container = document.getElementById('orbitalTimeline');
+  // remove old nodes
+  container.querySelectorAll('.ot-node').forEach(n => n.remove());
+  // rebuild with current lang
+  TIMELINE.forEach(item => container.appendChild(buildNode(item)));
+  updatePositions();
+}
+
+function toggleNode(id) {
+  if (expandedId === id) {
+    collapseAll();
+  } else {
+    collapseAll();
+    expandedId = id;
+    orbitAuto = false;
+    document.getElementById(`otc-${id}`)?.classList.add('open');
+    document.getElementById(`otn-${id}`)?.classList.add('active');
+  }
+}
+
+function collapseAll() {
+  expandedId = null;
+  orbitAuto = true;
+  document.querySelectorAll('.ot-card').forEach(c => c.classList.remove('open'));
+  document.querySelectorAll('.ot-node').forEach(n => n.classList.remove('active'));
+}
+
+function collapseNode(e) {
+  e.stopPropagation();
+  collapseAll();
+}
+
+function updatePositions() {
+  TIMELINE.forEach((item, i) => {
+    const angle = ((i / TIMELINE.length) * 360 + orbitAngle) % 360;
+    const rad = (angle * Math.PI) / 180;
+    const x = RADIUS * Math.cos(rad);
+    const y = RADIUS * Math.sin(rad);
+    const depth = Math.cos(rad); // -1 to 1
+    const opacity = expandedId === item.id ? 1 : Math.max(0.35, 0.35 + 0.65 * ((1 + Math.sin(rad)) / 2));
+    const scale = expandedId === item.id ? 1.3 : 0.82 + 0.32 * ((1 + depth) / 2);
+    const zIndex = expandedId === item.id ? 200 : Math.round(50 + 50 * depth);
+
+    const node = document.getElementById(`otn-${item.id}`);
+    if (node) {
+      node.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${scale})`;
+      node.style.opacity = opacity;
+      node.style.zIndex = zIndex;
+    }
+  });
+}
+
+function animate() {
+  if (orbitAuto) {
+    orbitAngle = (orbitAngle + 0.22) % 360;
+    updatePositions();
+  }
+  rafId = requestAnimationFrame(animate);
+}
+
+// Init
+rebuildTimeline();
+animate();
+
+// Click outside to collapse
+document.getElementById('orbitalTimeline').addEventListener('click', e => {
+  if (e.target.id === 'orbitalTimeline' || e.target.classList.contains('ot-ring') || e.target.classList.contains('ot-ring-inner')) {
+    collapseAll();
+  }
+});
+
+// Navbar shrink
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').style.background = window.scrollY > 60
+    ? 'rgba(6,6,15,0.97)' : 'rgba(6,6,15,0.85)';
+});
+</script>
+</body>
+</html>
