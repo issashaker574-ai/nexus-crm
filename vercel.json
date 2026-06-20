@@ -3,5 +3,10 @@
   "name": "nexus-crm",
   "buildCommand": null,
   "outputDirectory": ".",
-  "framework": null
+  "framework": null,
+  "routes": [
+    { "src": "^/$", "dest": "/landing.html" },
+    { "src": "^/app/?$", "dest": "/index.html" },
+    { "src": "^/(.*)", "dest": "/$1" }
+  ]
 }

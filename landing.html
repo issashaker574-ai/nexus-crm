@@ -456,8 +456,8 @@ footer{background:#030308;border-top:1px solid var(--border);padding:60px 48px 3
     <a href="#testimonials" data-t="nav_customers">Kunden</a>
   </div>
   <div class="nav-right">
-    <a class="btn-ghost" href="#" onclick="openModal();return false;" data-t="nav_login">Anmelden</a>
-    <a class="btn-cta" href="#" onclick="openModal();return false;" data-t="nav_beta">Beta-Zugang anfragen →</a>
+    <a class="btn-ghost" href="index.html" data-t="nav_login">Anmelden</a>
+    <a class="btn-cta" href="index.html" data-t="nav_beta">Beta-Zugang anfragen →</a>
     <button class="btn-lang" id="langBtn" onclick="toggleLang()" title="Switch language / Sprache wechseln">EN</button>
   </div>
 </nav>
@@ -1661,7 +1661,7 @@ footer{background:#030308;border-top:1px solid var(--border);padding:60px 48px 3
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         <span data-t="cta_btn">Jetzt Beta-Zugang anfragen</span>
       </a>
-      <a class="btn-hero-ghost" href="http://localhost:5500" data-t="cta_demo">Live-Demo öffnen →</a>
+      <a class="btn-hero-ghost" href="index.html" data-t="cta_demo">Live-Demo öffnen →</a>
     </div>
     <div class="cta-note">
       <span data-t="cta_n1">✓ Keine Kreditkarte</span>
@@ -1934,7 +1934,7 @@ function closeModal(){
   document.getElementById('modal').classList.remove('open');
   document.body.style.overflow='';
 }
-function goApp(){ window.location.href = 'http://localhost:5500'; }
+function goApp(){ window.location.href = 'index.html'; }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 
 function selectPlan(id, price, name, el){
