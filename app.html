@@ -3692,7 +3692,19 @@ async function doLogin() {
         showToast('Willkommen, ' + currentUser.name + ' ✓', 'success');
         return;
       }
-      // Supabase auth fehlgeschlagen — Fehler anzeigen, KEIN lokaler Fallback
+      // Supabase auth fehlgeschlagen — graceful Fallback auf lokalen Account
+      const localUser = nexusUsers.find(u => u.email.toLowerCase()===email && u.password===pass);
+      if (localUser) {
+        if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Anmelden →'; }
+        currentUser = localUser;
+        localStorage.setItem('nexus-session', btoa(localUser.id + ':' + Date.now()));
+        localStorage.setItem('nexus-session-user', JSON.stringify(localUser));
+        document.getElementById('login-screen').style.display = 'none';
+        logAudit('login', 'auth', 'Lokaler Login (Cloud-Fallback): ' + email);
+        updateUserUI();
+        showToast('Willkommen, ' + localUser.name + ' ✓ (lokaler Modus)', 'success');
+        return;
+      }
       if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Anmelden →'; }
       errEl.style.display = 'block';
       errEl.textContent = error?.message === 'Invalid login credentials'
