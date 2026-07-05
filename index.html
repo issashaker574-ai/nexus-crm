@@ -1085,6 +1085,23 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6;}
   overflow:hidden;display:flex;flex-direction:column;
   max-height:70vh;animation:slideUp 0.16s ease;
 }
+/* ── Workspace-Wizard (Profil-Auswahl) ── */
+@keyframes wsRise{from{opacity:0;transform:translateY(28px) scale(.97);}to{opacity:1;transform:none;}}
+.ws-card{
+  background:linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012));
+  border:1px solid var(--border2);border-radius:16px;
+  padding:28px 22px;cursor:pointer;text-align:center;
+  transition:transform .22s cubic-bezier(.2,.9,.3,1),box-shadow .22s,border-color .22s;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.ws-card:hover{
+  transform:translateY(-5px);
+  border-color:rgba(94,106,210,0.55);
+  box-shadow:0 0 0 1px rgba(94,106,210,0.3),0 18px 48px rgba(94,106,210,0.22),0 6px 20px rgba(0,0,0,0.5);
+}
+.ws-card-active{border-color:rgba(75,174,127,0.5);box-shadow:0 0 0 1px rgba(75,174,127,0.28);}
+[data-theme="light"] .ws-card{background:rgba(255,255,255,0.75);}
+[data-theme="light"] #ws-wizard-overlay{background:rgba(240,240,245,0.72)!important;}
 .cmd-input-wrap{
   display:flex;align-items:center;gap:12px;
   padding:16px 20px;border-bottom:1px solid var(--border);
@@ -1538,6 +1555,103 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6;}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;}
 .sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══════════════════════════════════════════
+   LUXURY LAYER — Premium-Polish (überschreibt Basis-Styles)
+   ═══════════════════════════════════════════ */
+
+/* Primär-Buttons: Gradient + Glow + Lift */
+.btn-primary{
+  background:linear-gradient(135deg,var(--blue) 0%,var(--purple) 100%);
+  box-shadow:0 2px 10px rgba(94,106,210,0.35),inset 0 1px 0 rgba(255,255,255,0.12);
+  transition:transform .16s cubic-bezier(.2,.9,.3,1),box-shadow .16s,opacity .12s;
+}
+.btn-primary:hover{
+  opacity:1;transform:translateY(-1px);
+  box-shadow:0 4px 18px rgba(94,106,210,0.5),inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.btn-primary:active{transform:translateY(0);}
+.topbar-new-btn{
+  background:linear-gradient(135deg,var(--blue) 0%,var(--purple) 100%)!important;
+  box-shadow:0 2px 10px rgba(94,106,210,0.35);
+  transition:transform .16s,box-shadow .16s!important;
+}
+.topbar-new-btn:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(94,106,210,0.5);}
+
+/* Karten: sanfter Verlauf + Hover-Elevation */
+.card,.stat-card{
+  background:linear-gradient(180deg,var(--bg2) 0%,color-mix(in srgb,var(--bg2) 92%,transparent) 100%);
+  transition:transform .2s cubic-bezier(.2,.9,.3,1),border-color .2s,box-shadow .2s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.45),0 2px 8px rgba(0,0,0,0.3);}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,0.5),0 0 0 1px var(--blue-glow);}
+[data-theme="light"] .card:hover{box-shadow:0 8px 28px rgba(0,0,0,0.10);}
+[data-theme="light"] .stat-card:hover{box-shadow:0 10px 32px rgba(0,0,0,0.12);}
+
+/* KPI-Zahlen: Gradient-Text */
+.stat-value{
+  background:linear-gradient(135deg,var(--text1) 30%,var(--blue) 130%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+/* Topbar & Sidebar: Glass-Feeling */
+#topbar{
+  background:color-mix(in srgb,var(--bg1) 82%,transparent);
+  backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+}
+#sidebar{background:linear-gradient(180deg,var(--bg1) 0%,var(--bg0) 100%);}
+.nav-item.active{box-shadow:inset 0 0 20px rgba(94,106,210,0.06);}
+
+/* Modals: tiefere Schatten + mehr Blur */
+.modal-overlay{background:rgba(0,0,0,0.6);backdrop-filter:blur(10px) saturate(130%);-webkit-backdrop-filter:blur(10px) saturate(130%);}
+.modal{
+  box-shadow:0 24px 80px rgba(0,0,0,0.7),0 8px 24px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.04);
+  animation:luxModalIn .28s cubic-bezier(.2,.9,.3,1);
+}
+@keyframes luxModalIn{from{transform:translateY(24px) scale(.975);opacity:0;}to{transform:none;opacity:1;}}
+
+/* View-Übergang: sanftes Aufsteigen */
+@keyframes luxViewIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+#content > *:first-child{animation:luxViewIn .3s cubic-bezier(.2,.9,.3,1);}
+
+/* Eingabefelder: Premium-Fokus */
+input:focus-visible,textarea:focus-visible,select:focus-visible{
+  outline:none;border-color:rgba(94,106,210,0.55)!important;
+  box-shadow:0 0 0 3px rgba(94,106,210,0.15);
+}
+
+/* Scrollbar: schlanker, edler */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.10);border-radius:99px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(94,106,210,0.55);}
+[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.14);}
+
+/* Toasts: Glass + Schatten */
+.toast-item{
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 10px 36px rgba(0,0,0,0.5),0 2px 10px rgba(0,0,0,0.35);
+}
+
+/* Command Palette: Glass-Upgrade */
+.cmd-palette{
+  background:color-mix(in srgb,var(--bg1) 88%,transparent);
+  backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);
+  box-shadow:0 32px 90px rgba(0,0,0,0.75),0 0 0 1px rgba(94,106,210,0.12);
+}
+
+/* Sidebar-Logo: Gradient-Mark */
+.logo-mark{
+  background:linear-gradient(135deg,var(--blue) 0%,var(--purple) 100%);
+  box-shadow:0 2px 12px rgba(94,106,210,0.45);
+}
+
+/* Tabellenzeilen: sanfter Hover */
+tr{transition:background .12s;}
+
+/* Reduzierte Bewegung respektieren */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}
+}
 </style>
 </head>
 <body>
@@ -3858,6 +3972,110 @@ function updateUserUI() {
   }
   if (avatarEl) { avatarEl.textContent = currentUser.avatar; avatarEl.style.background = currentUser.color; }
   updateSidebarLocks();
+  applyWorkspaceProfile();
+  maybeShowWorkspaceWizard();
+}
+
+// ═══════════════════════════════════════════
+// WORKSPACE-PROFILE — adaptive Komplexität
+// Solo sieht das Wesentliche, Enterprise alles.
+// Alle Inhalte hier sind statische Konstanten (kein User-Input → kein XSS).
+// ═══════════════════════════════════════════
+var WORKSPACE_PROFILES = {
+  solo: {
+    label: 'Solo & Klein', icon: '🚀', desc: '1–10 Mitarbeiter',
+    sub: 'Das Wesentliche: CRM, Kasse, Rechnungen, Lager',
+    views: ['dashboard','inbox','contacts','pipeline','deals','companies','ai','import',
+            'accounting','inventory','pos','cashflow','kassenbuch','favorites','taxcenter',
+            'pricing','impressum','datenschutz']
+  },
+  business: {
+    label: 'Mittelstand', icon: '🏢', desc: '10–250 Mitarbeiter',
+    sub: '+ Team, Projekte, Produktion, Marketing, Service',
+    views: ['dashboard','inbox','contacts','pipeline','deals','companies','ai','import',
+            'accounting','inventory','pos','cashflow','kassenbuch','favorites','taxcenter',
+            'pricing','impressum','datenschutz',
+            'team','projects','resources','analytics','cac','emails','automations','appstore',
+            'ecommerce','marketing','contracts','einkauf','produktion','dms','service',
+            'leaderboard','onboarding','planning','qualification','roicalc','customerbot',
+            'qrgen','users','multicompany','portal','access','industryhub']
+  },
+  enterprise: {
+    label: 'Enterprise', icon: '🌐', desc: '250+ Mitarbeiter',
+    sub: 'Alle 80+ Module: BI, Compliance, ESG, Innovation Lab',
+    views: null  // null = alles sichtbar
+  }
+};
+
+function getWorkspaceProfile() {
+  return localStorage.getItem('nexus-workspace-profile') || null;
+}
+
+function setWorkspaceProfile(p) {
+  if (!WORKSPACE_PROFILES[p]) return;
+  localStorage.setItem('nexus-workspace-profile', p);
+  applyWorkspaceProfile();
+  var ov = document.getElementById('ws-wizard-overlay');
+  if (ov) ov.remove();
+  showToast(WORKSPACE_PROFILES[p].icon + ' Workspace: ' + WORKSPACE_PROFILES[p].label + ' aktiviert', 'success');
+}
+
+function applyWorkspaceProfile() {
+  var p = getWorkspaceProfile();
+  var allowed = p && WORKSPACE_PROFILES[p] ? WORKSPACE_PROFILES[p].views : null;
+  // Nav-Items filtern
+  document.querySelectorAll('#sidebar .nav-item[data-view]').forEach(function(el) {
+    var v = el.dataset.view;
+    el.style.display = (!allowed || allowed.indexOf(v) !== -1) ? '' : 'none';
+  });
+  // Sektionen ohne sichtbare Items ausblenden
+  document.querySelectorAll('#sidebar .sidebar-section').forEach(function(sec) {
+    var el = sec.nextElementSibling, anyVisible = false;
+    while (el && !el.classList.contains('sidebar-section')) {
+      if (el.classList.contains('nav-item') && el.style.display !== 'none') { anyVisible = true; break; }
+      el = el.nextElementSibling;
+    }
+    sec.style.display = anyVisible ? '' : 'none';
+  });
+}
+
+function maybeShowWorkspaceWizard() {
+  if (getWorkspaceProfile()) return;   // schon gewählt
+  if (document.getElementById('ws-wizard-overlay')) return;
+  openWorkspaceWizard();
+}
+
+function openWorkspaceWizard() {
+  var old = document.getElementById('ws-wizard-overlay');
+  if (old) old.remove();
+  var cur = getWorkspaceProfile();
+  var ov = document.createElement('div');
+  ov.id = 'ws-wizard-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;'
+    + 'background:rgba(5,5,12,0.72);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);'
+    + 'animation:fadeIn .3s ease;padding:20px;';
+  // Statische Templates aus WORKSPACE_PROFILES-Konstanten — kein User-Input
+  var cards = Object.keys(WORKSPACE_PROFILES).map(function(key) {
+    var pr = WORKSPACE_PROFILES[key];
+    var active = cur === key;
+    return '<div class="ws-card' + (active ? ' ws-card-active' : '') + '" onclick="setWorkspaceProfile(\'' + key + '\')">'
+      + '<div style="font-size:34px;margin-bottom:14px;">' + pr.icon + '</div>'
+      + '<div style="font-size:16.5px;font-weight:700;color:var(--text1);margin-bottom:4px;">' + pr.label + '</div>'
+      + '<div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:10px;letter-spacing:.3px;">' + pr.desc + '</div>'
+      + '<div style="font-size:12.5px;color:var(--text2);line-height:1.55;">' + pr.sub + '</div>'
+      + (active ? '<div style="margin-top:12px;font-size:11px;font-weight:700;color:var(--green);">✓ Aktiv</div>' : '')
+      + '</div>';
+  }).join('');
+  ov.insertAdjacentHTML('beforeend',
+    '<div style="max-width:820px;width:100%;text-align:center;animation:wsRise .45s cubic-bezier(.2,.9,.3,1);">'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--blue);text-transform:uppercase;margin-bottom:14px;">Workspace einrichten</div>'
+    + '<h2 style="font-size:30px;font-weight:800;color:var(--text1);margin-bottom:10px;letter-spacing:-.5px;">Wie groß ist dein Unternehmen?</h2>'
+    + '<p style="font-size:14px;color:var(--text2);margin-bottom:36px;">NEXUS passt sich an — du siehst nur, was du brauchst. Kein Ballast.</p>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">' + cards + '</div>'
+    + '<div style="margin-top:28px;font-size:12px;color:var(--text3);">Jederzeit änderbar — Einstellungen → Workspace oder <span style="border:1px solid var(--border2);border-radius:4px;padding:1px 6px;font-family:monospace;font-size:11px;">⌘K</span></div>'
+    + (cur ? '<div style="margin-top:14px;"><span onclick="document.getElementById(\'ws-wizard-overlay\').remove()" style="cursor:pointer;font-size:12.5px;color:var(--text2);text-decoration:underline;text-underline-offset:3px;">Schließen</span></div>' : '')
+    + '</div>');
+  document.body.appendChild(ov);
 }
 
 function initAuth() {
@@ -9205,6 +9423,7 @@ const COMMANDS = [
   {cat:'ai',icon:'📈',label:'Forecast Revenue',sub:'AI revenue prediction',action:()=>{ closeCmdPalette(); navigate('analytics'); setTimeout(()=>showToast('AI forecast loading…','info'),200); }},
   {cat:'ai',icon:'⚠️',label:'Show At-Risk Deals',sub:'Deals needing attention',action:()=>{ closeCmdPalette(); navigate('pipeline'); setTimeout(()=>showToast('Highlighting 3 at-risk deals','info'),200); }},
   // Settings
+  {cat:'settings',icon:'🏢',label:'Workspace-Modus ändern',sub:'Solo · Mittelstand · Enterprise',action:()=>{ closeCmdPalette(); openWorkspaceWizard(); }},
   {cat:'settings',icon:'🌙',label:'Toggle Dark / Light Mode',sub:'Switch theme',action:()=>{ closeCmdPalette(); toggleTheme(); }},
   {cat:'settings',icon:'🌍',label:'Switch to Deutsch',sub:'Change language to DE',action:()=>{ closeCmdPalette(); setLang('de'); }},
   {cat:'settings',icon:'🌍',label:'Switch to English',sub:'Change language to EN',action:()=>{ closeCmdPalette(); setLang('en'); }},
@@ -9244,7 +9463,7 @@ function openCmdPalette() {
     const q = inp.value.toLowerCase();
     cmdFiltered = q ? COMMANDS.filter(c =>
       c.label.toLowerCase().includes(q) || (c.sub||'').toLowerCase().includes(q) || c.cat.includes(q)
-    ) : [...COMMANDS];
+    ).concat(searchLiveData(q)) : [...COMMANDS];
     cmdSelectedIdx = 0;
     document.getElementById('cmd-results').innerHTML = renderCmdResults(cmdFiltered, cmdSelectedIdx);
   });
@@ -9256,9 +9475,42 @@ function openCmdPalette() {
   });
 }
 
+// ⌘K Live-Daten-Suche: Kontakte, Deals, Produkte direkt finden
+function searchLiveData(q) {
+  var out = [];
+  if (q.length < 2) return out;
+  try {
+    // Kontakte (Name, E-Mail, Firma)
+    contacts.filter(function(c) {
+      return ((c.name||'')+' '+(c.email||'')+' '+(c.company||'')).toLowerCase().indexOf(q) !== -1;
+    }).slice(0,5).forEach(function(c) {
+      out.push({cat:'kontakte', icon:'👤', label:c.name,
+        sub:(c.company && c.company !== '—' ? c.company : (c.email||'')) + (c.role && c.role !== '—' ? ' · '+c.role : ''),
+        action:function(){ navigate('contacts'); setTimeout(function(){ var f=contacts.find(function(x){return x.id===c.id;}); if(f) openContactPanel(f); }, 300); }});
+    });
+    // Deals (Name, Firma) aus der Pipeline
+    pipeline.flatMap(function(col){ return col.deals.map(function(d){ return Object.assign({}, d, {stage: col.col}); }); })
+      .filter(function(d) { return ((d.name||'')+' '+(d.company||'')).toLowerCase().indexOf(q) !== -1; })
+      .slice(0,5).forEach(function(d) {
+        out.push({cat:'dealsuche', icon:'💼', label:d.name,
+          sub:(d.company||'')+' · €'+Math.round(d.value/1000)+'K · '+d.stage,
+          action:function(){ navigate('pipeline'); }});
+      });
+    // Produkte (Name, SKU, Kategorie)
+    inventoryData.filter(function(p) {
+      return ((p.name||'')+' '+(p.sku||'')+' '+(p.category||'')).toLowerCase().indexOf(q) !== -1;
+    }).slice(0,5).forEach(function(p) {
+      out.push({cat:'produkte', icon:'📦', label:p.name,
+        sub:p.sku+' · '+p.stock+' auf Lager · €'+p.price.toLocaleString('de-DE'),
+        action:function(){ navigate('inventory'); }});
+    });
+  } catch(e) { console.warn('searchLiveData:', e); }
+  return out;
+}
+
 function renderCmdResults(cmds, selIdx) {
   if(!cmds.length) return `<div style="text-align:center;padding:32px;color:var(--text3);font-size:13px;">No commands found</div>`;
-  const cats = {navigate:'Navigate',create:'Create',ai:'AI Actions',settings:'Settings'};
+  const cats = {navigate:'Navigate',create:'Create',ai:'AI Actions',settings:'Settings',kontakte:'Kontakte',dealsuche:'Deals',produkte:'Produkte'};
   let html = ''; let lastCat = '';
   cmds.forEach((cmd,i) => {
     if(cmd.cat !== lastCat){ html += `<div class="cmd-category">${cats[cmd.cat]||cmd.cat}</div>`; lastCat=cmd.cat; }
