@@ -3817,7 +3817,10 @@ async function doRegister() {
     try {
       var { data, error } = await sb.auth.signUp({
         email: email, password: pass,
-        options: { data: { full_name: name, company: company, plan: 'professional', role: 'admin' } }
+        options: {
+          emailRedirectTo: location.origin + location.pathname,   // Bestätigungslink → zurück in die App
+          data: { full_name: name, company: company, plan: 'professional', role: 'admin' }
+        }
       });
       if (regBtn) { regBtn.disabled = false; regBtn.textContent = 'Account erstellen & starten →'; }
       if (error) {
@@ -4243,6 +4246,31 @@ function initAuth() {
   if (nexusSupabase.enabled && nexusSupabase.url && nexusSupabase.key) {
     var badge = document.getElementById('sb-login-badge');
     if (badge) badge.style.display = 'block';
+    // Auto-Login: supabase-js liest #access_token aus der URL
+    // (E-Mail-Bestätigung / Magic Link) oder eine persistierte Cloud-Session.
+    var sb = sbClient();
+    if (sb) {
+      sb.auth.getSession().then(function(res) {
+        var s = res && res.data && res.data.session;
+        if (!s || !s.user) return;
+        if (currentUser) return;                     // schon eingeloggt
+        if (location.hash.includes('type=recovery')) return;  // Recovery-Dialog übernimmt
+        var u = s.user;
+        currentUser = {
+          id: u.id, name: (u.user_metadata?.full_name || (u.email||'').split('@')[0]),
+          email: u.email, role: u.user_metadata?.role || 'admin',
+          color: '#5E6AD2', avatar: ((u.email||'U')[0]).toUpperCase(),
+          plan: u.user_metadata?.plan || 'professional',
+          company: u.user_metadata?.company || ''
+        };
+        localStorage.setItem('nexus-session', btoa(u.id + ':' + Date.now()));
+        localStorage.setItem('nexus-session-user', JSON.stringify(currentUser));
+        document.getElementById('login-screen').style.display = 'none';
+        updateUserUI();
+        history.replaceState({}, '', location.pathname);  // Token aus URL entfernen
+        showToast('E-Mail bestätigt — willkommen, ' + currentUser.name + ' 🎉', 'success');
+      }).catch(function(e) { console.warn('auto-login:', e); });
+    }
   }
 }
 

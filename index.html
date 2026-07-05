@@ -2043,7 +2043,9 @@ async function handlePayment(){
   btn.disabled = true; btn.style.opacity = '.65';
   btn.textContent = '☁️ Konto wird erstellt…';
   try {
-    const res = await fetch(SB_URL + '/auth/v1/signup', {
+    // redirect_to: Bestätigungslink führt direkt in die App (Auto-Login dort)
+    const appUrl = new URL('app.html', location.href).href;
+    const res = await fetch(SB_URL + '/auth/v1/signup?redirect_to=' + encodeURIComponent(appUrl), {
       method: 'POST',
       headers: { 'apikey': SB_ANON, 'Content-Type': 'application/json' },
       body: JSON.stringify({
