@@ -2937,15 +2937,36 @@ function toggleSidebarSection(sec){
   localStorage.setItem('nexus-sb-sections', JSON.stringify(_sbCollapsed));
 }
 
+// ═══ ZENTRALE SICHTBARKEITSREGEL ═══
+// Sichtbar = CORE  ODER  (im Plan enthalten UND vom Nutzer installiert)
+// Plan-fremde Apps: komplett unsichtbar (kein Lock) — im App Store als Upgrade sichtbar.
+// Nicht installierte Apps: unsichtbar — im App Store per Klick hinzufügbar.
+var CORE_APPS = ['dashboard', 'appstore', 'settings'];
+
+function isAppVisible(v){
+  if (CORE_APPS.indexOf(v) !== -1) return true;
+  if (typeof hasAccess === 'function' && !hasAccess(v)) return false;   // Plan-Filter
+  return getSidebarHidden().indexOf(v) === -1;                          // Nutzer-Wahl
+}
+
 function applySidebarConfig(){
-  var hidden = getSidebarHidden();
   var labelMap = {};
   _allNavItems.forEach(function(item){ labelMap[item.view] = item.label; });
-  document.querySelectorAll('.nav-item[data-view]').forEach(function(el){
-    el.style.display = hidden.includes(el.dataset.view) ? 'none' : '';
-    if(!el.dataset.tooltip && labelMap[el.dataset.view]){
-      el.dataset.tooltip = labelMap[el.dataset.view];
+  document.querySelectorAll('#sidebar .nav-item[data-view]').forEach(function(el){
+    var v = el.dataset.view;
+    el.style.display = isAppVisible(v) ? '' : 'none';
+    if(!el.dataset.tooltip && labelMap[v]){
+      el.dataset.tooltip = labelMap[v];
     }
+  });
+  // Sektionen ohne sichtbare Items ausblenden
+  document.querySelectorAll('#sidebar .sidebar-section').forEach(function(sec){
+    var el = sec.nextElementSibling, anyVisible = false;
+    while (el && !el.classList.contains('sidebar-section')) {
+      if (el.classList.contains('nav-item') && el.style.display !== 'none') { anyVisible = true; break; }
+      el = el.nextElementSibling;
+    }
+    sec.style.display = anyVisible ? '' : 'none';
   });
   if(localStorage.getItem('nexus-sidebar-collapsed')==='1'){
     document.getElementById('sidebar').classList.add('collapsed');
@@ -2956,6 +2977,7 @@ function openSidebarEdit(){
   var hidden = getSidebarHidden();
   var sections = {};
   _allNavItems.forEach(function(item){
+    if(!hasAccess(item.view)) return;   // Plan-fremde Views: nur im App Store (Upgrade)
     if(!sections[item.section]) sections[item.section]=[];
     sections[item.section].push(item);
   });
@@ -4078,29 +4100,32 @@ function getWorkspaceProfile() {
 function setWorkspaceProfile(p) {
   if (!WORKSPACE_PROFILES[p]) return;
   localStorage.setItem('nexus-workspace-profile', p);
-  applyWorkspaceProfile();
+  resetSidebarToProfile(p);   // expliziter Wechsel = Sidebar auf Profil-Default
+  applySidebarConfig();
   var ov = document.getElementById('ws-wizard-overlay');
   if (ov) ov.remove();
   showToast(WORKSPACE_PROFILES[p].icon + ' Workspace: ' + WORKSPACE_PROFILES[p].label + ' aktiviert', 'success');
 }
 
 function applyWorkspaceProfile() {
-  var p = getWorkspaceProfile();
-  var allowed = p && WORKSPACE_PROFILES[p] ? WORKSPACE_PROFILES[p].views : null;
-  // Nav-Items filtern
-  document.querySelectorAll('#sidebar .nav-item[data-view]').forEach(function(el) {
-    var v = el.dataset.view;
-    el.style.display = (!allowed || allowed.indexOf(v) !== -1) ? '' : 'none';
-  });
-  // Sektionen ohne sichtbare Items ausblenden
-  document.querySelectorAll('#sidebar .sidebar-section').forEach(function(sec) {
-    var el = sec.nextElementSibling, anyVisible = false;
-    while (el && !el.classList.contains('sidebar-section')) {
-      if (el.classList.contains('nav-item') && el.style.display !== 'none') { anyVisible = true; break; }
-      el = el.nextElementSibling;
-    }
-    sec.style.display = anyVisible ? '' : 'none';
-  });
+  // Läuft bei jedem updateUserUI: NUR anwenden, nie die Nutzer-Wahl überschreiben.
+  applySidebarConfig();
+}
+
+function resetSidebarToProfile(p) {
+  // Profil = Default-Installationsset: alles außerhalb des Profils
+  // landet in der Hidden-Liste (gleicher Store wie App Store / Nav-Editor).
+  var allowed = WORKSPACE_PROFILES[p] ? WORKSPACE_PROFILES[p].views : null;
+  if (allowed) {
+    var hidden = [];
+    document.querySelectorAll('#sidebar .nav-item[data-view]').forEach(function(el) {
+      var v = el.dataset.view;
+      if (allowed.indexOf(v) === -1) hidden.push(v);
+    });
+    saveSidebarHidden(hidden);
+  } else {
+    saveSidebarHidden([]);   // Enterprise: alles installiert
+  }
 }
 
 function maybeShowWorkspaceWizard() {
@@ -4250,18 +4275,9 @@ function showUpgradeModal(view){
 }
 
 function updateSidebarLocks(){
-  document.querySelectorAll('.nav-item[data-view]').forEach(el=>{
-    const view = el.dataset.view;
-    const existing = el.querySelector('.nav-plan-lock');
-    if(existing) existing.remove();
-    if(!hasAccess(view)){
-      const lock = document.createElement('span');
-      lock.className = 'nav-plan-lock';
-      lock.textContent = '🔒';
-      lock.style.cssText = 'font-size:9px;margin-left:auto;opacity:0.45;flex-shrink:0;';
-      el.appendChild(lock);
-    }
-  });
+  // Plan-fremde Apps sind jetzt UNSICHTBAR (applySidebarConfig) statt gesperrt.
+  // Alte Lock-Icons aufräumen; Upgrade-Pfad läuft über den App Store.
+  document.querySelectorAll('.nav-item .nav-plan-lock').forEach(el=>el.remove());
 }
 
 // ═══════════════════════════════════════════
@@ -10214,6 +10230,85 @@ var NEXUS_APPS = [
   {id:'marketplace',icon:'🏪',name:'B2B Marketplace',cat:'Platform',desc:'Buy and sell products and services directly within the NEXUS ecosystem.',status:'soon',rating:4.7,reviews:0,installs:'Demnächst',color:'#E8A045',tags:['marketplace','b2b','commerce','ecosystem']},
 ];
 
+// ═══ App-Installation: Sidebar ↔ App Store ═══
+function toggleAppInSidebar(v) {
+  if (CORE_APPS.indexOf(v) !== -1) { showToast('System-App — immer in der Sidebar', 'info'); return; }
+  if (!hasAccess(v)) { navigate('pricing'); return; }
+  var hidden = getSidebarHidden();
+  var idx = hidden.indexOf(v);
+  if (idx === -1) {
+    hidden.push(v);
+    showToast('Aus der Sidebar entfernt — jederzeit im App Store', 'info');
+  } else {
+    hidden.splice(idx, 1);
+    showToast('✓ Zur Sidebar hinzugefügt', 'success');
+  }
+  saveSidebarHidden(hidden);
+  applySidebarConfig();
+  // App-Store-Ansicht live aktualisieren, wenn offen
+  var content = document.getElementById('content');
+  if (content && document.getElementById('as-manager')) renderAppStore(content);
+}
+
+function buildSidebarManagerHTML() {
+  // Alle Module aus dem DOM lesen (deckt alle 80+ Views ab)
+  var hidden = getSidebarHidden();
+  // Section-Keys → angezeigte Labels (i18n-Keys wie CRM_SECTION auflösen)
+  var sectionLabels = {};
+  document.querySelectorAll('#sidebar .sidebar-section').forEach(function(sec) {
+    var key = sec.dataset.sbKey || sec.textContent.replace(/[▾▸]/g, '').trim();
+    sectionLabels[key] = sec.textContent.replace(/[▾▸]/g, '').trim();
+  });
+  var groups = {};
+  document.querySelectorAll('#sidebar .nav-item[data-view]').forEach(function(nav) {
+    var v = nav.dataset.view;
+    var sectionKey = nav.dataset.sbSection || 'Weitere';
+    var section = sectionLabels[sectionKey] || sectionKey.replace(/_SECTION$/i, '').replace(/_/g, ' ');
+    // Label ohne Badges/Locks extrahieren
+    var clone = nav.cloneNode(true);
+    clone.querySelectorAll('.nav-badge, .nav-plan-lock, svg').forEach(function(x) { x.remove(); });
+    var label = (nav.dataset.tooltip || clone.textContent || v).replace(/🔒/g, '').trim();
+    if (!groups[section]) groups[section] = [];
+    groups[section].push({ view: v, label: label });
+  });
+  var html = Object.keys(groups).map(function(sec) {
+    var chips = groups[sec].map(function(m) {
+      var core = CORE_APPS.indexOf(m.view) !== -1;
+      var inPlan = hasAccess(m.view);
+      var installed = core || (inPlan && hidden.indexOf(m.view) === -1);
+      var cls, icon, extra = '';
+      if (!inPlan && !core) {
+        cls = 'background:var(--bg3);color:var(--text3);border:1px dashed var(--border2);';
+        icon = '🔒 ';
+        extra = ' · ab ' + (PLAN_FEATURES[minPlanFor(m.view)]?.label || 'Business');
+      } else if (installed) {
+        cls = 'background:rgba(94,106,210,0.14);color:var(--text1);border:1px solid rgba(94,106,210,0.4);';
+        icon = '✓ ';
+      } else {
+        cls = 'background:var(--bg2);color:var(--text2);border:1px solid var(--border);';
+        icon = '+ ';
+      }
+      if (core) extra = ' · System';
+      return '<button onclick="toggleAppInSidebar(\'' + m.view + '\')" style="' + cls
+        + 'border-radius:99px;padding:5px 12px;font-size:11.5px;font-weight:600;cursor:pointer;'
+        + 'font-family:inherit;transition:transform .12s,box-shadow .12s;white-space:nowrap;" '
+        + 'onmouseover="this.style.transform=\'translateY(-1px)\'" onmouseout="this.style.transform=\'\'">'
+        + icon + m.label + '<span style="opacity:.55;font-weight:400;">' + extra + '</span></button>';
+    }).join('');
+    return '<div style="margin-bottom:14px;">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;">' + sec + '</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:7px;">' + chips + '</div>'
+      + '</div>';
+  }).join('');
+  var visCount = document.querySelectorAll('#sidebar .nav-item[data-view]').length - hidden.length;
+  return '<div id="as-manager" class="card" style="margin-bottom:24px;padding:20px;">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
+    + '<div><div style="font-size:15px;font-weight:700;color:var(--text1);">🧩 Sidebar verwalten</div>'
+    + '<div style="font-size:12px;color:var(--text2);margin-top:3px;">Klicke ein Modul an, um es in der Sidebar ein- oder auszublenden. 🔒 = im höheren Plan enthalten.</div></div>'
+    + '<div style="font-size:11.5px;color:var(--text3);">' + visCount + ' Module aktiv</div>'
+    + '</div>' + html + '</div>';
+}
+
 function renderAppStore(el) {
   var cats = ['All','CRM','ERM','Analytics','AI','ERP','Platform','Marketing','Finance','Compliance','Productivity'];
   var activeApps = NEXUS_APPS.filter(function(a){ return a.status==='active'; });
@@ -10225,11 +10320,27 @@ function renderAppStore(el) {
     var statusLabel = a.status==='active' ? (a.isNew ? t('as_new')||'New' : 'Active') : t('as_coming_soon')||'Coming Soon';
     var statusClass = a.status==='active' ? (a.isNew ? 'new-b' : 'active-b') : 'soon-b';
     var stars = '★'.repeat(Math.round(a.rating)) + '☆'.repeat(5 - Math.round(a.rating));
-    var btnHtml = a.status === 'active'
-      ? (a.view
-          ? '<button class="as-card-btn open-b" onclick="event.stopPropagation();navigate(\''+a.view+'\')">'+t('as_open')+'</button>'
-          : '<button class="as-card-btn install-b" onclick="event.stopPropagation();showToast(\''+a.name+' wird konfiguriert…\',\'info\')">'+t('as_configure')+'</button>')
-      : '<button class="as-card-btn soon-b" disabled>'+t('as_coming_soon')+'</button>';
+    var btnHtml;
+    if (a.status !== 'active') {
+      btnHtml = '<button class="as-card-btn soon-b" disabled>'+t('as_coming_soon')+'</button>';
+    } else if (!a.view) {
+      btnHtml = '<button class="as-card-btn install-b" onclick="event.stopPropagation();showToast(\''+a.name+' wird konfiguriert…\',\'info\')">'+t('as_configure')+'</button>';
+    } else if (!hasAccess(a.view)) {
+      // Nicht im Plan → Upgrade-Pfad
+      var needPlan = PLAN_FEATURES[minPlanFor(a.view)]?.label || 'Business';
+      btnHtml = '<button class="as-card-btn" style="background:var(--bg3);color:var(--amber);border:1px solid rgba(232,160,69,0.35);" onclick="event.stopPropagation();navigate(\'pricing\')">🔒 Ab '+needPlan+' — Upgrade</button>';
+    } else if (isAppVisible(a.view)) {
+      // Installiert → Öffnen + Entfernen
+      btnHtml = '<div style="display:flex;gap:6px;">'
+        + '<button class="as-card-btn open-b" style="flex:1;" onclick="event.stopPropagation();navigate(\''+a.view+'\')">'+t('as_open')+'</button>'
+        + (CORE_APPS.indexOf(a.view)===-1
+            ? '<button class="as-card-btn" style="flex:0 0 auto;background:var(--bg3);color:var(--text2);border:1px solid var(--border);" title="Aus der Sidebar entfernen" onclick="event.stopPropagation();toggleAppInSidebar(\''+a.view+'\')">−</button>'
+            : '')
+        + '</div>';
+    } else {
+      // Im Plan, aber nicht installiert → Hinzufügen
+      btnHtml = '<button class="as-card-btn install-b" onclick="event.stopPropagation();toggleAppInSidebar(\''+a.view+'\')">+ Zur Sidebar hinzufügen</button>';
+    }
     return '<div class="as-card" onclick="'+(a.view ? 'navigate(\''+a.view+'\')' : 'showToast(\''+a.name+' coming soon!\',\'info\')') + '">' +
       '<div class="as-card-glow" style="background:'+a.color+';opacity:0.45;"></div>' +
       '<div class="as-card-top">' +
@@ -10256,6 +10367,8 @@ function renderAppStore(el) {
         '<p>'+activeApps.length+' active · '+soonApps.length+' coming soon · '+newApps.length+' new this month</p>' +
       '</div>' +
     '</div>' +
+
+    buildSidebarManagerHTML() +
 
     '<div class="as-stats">' +
       '<div class="as-stat"><div class="as-stat-n" style="color:var(--blue);">'+activeApps.length+'</div><div class="as-stat-l">'+t('as_active')+'</div></div>' +
