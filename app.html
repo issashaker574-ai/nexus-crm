@@ -4228,7 +4228,17 @@ var PLAN_FEATURES = {
 };
 var PLAN_ORDER = ['starter','professional','business','enterprise'];
 
-function getUserPlan(){ return currentUser?.plan||'starter'; }
+// Landing-Checkout-Pläne (dienstleistung/handel) → App-Plan-Stufen mappen.
+// Unbekannte Werte fallen sicher auf 'starter' zurück (nie undefined → leere Sidebar).
+var PLAN_ID_MAP = {
+  starter: 'starter',
+  professional: 'professional',
+  dienstleistung: 'professional',   // Landing: ERP Dienstleistung €95
+  business: 'business',
+  handel: 'business',               // Landing: ERP Handel €179
+  enterprise: 'enterprise'
+};
+function getUserPlan(){ return PLAN_ID_MAP[currentUser?.plan] || 'starter'; }
 
 function hasAccess(view){
   const pf = PLAN_FEATURES[getUserPlan()];
