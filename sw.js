@@ -1,5 +1,5 @@
-const CACHE = 'nexus-v3';
-const ASSETS = ['/', '/index.html'];
+const CACHE = 'nexus-v4';
+const ASSETS = ['./', './index.html', './app.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));

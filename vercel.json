@@ -5,8 +5,7 @@
   "outputDirectory": ".",
   "framework": null,
   "routes": [
-    { "src": "^/$", "dest": "/landing.html" },
-    { "src": "^/app/?$", "dest": "/index.html" },
+    { "src": "^/app/?$", "dest": "/app.html" },
     { "src": "^/(.*)", "dest": "/$1" }
   ]
 }

@@ -2,7 +2,7 @@
   "name": "NEXUS — Intelligent Business Platform",
   "short_name": "NEXUS",
   "description": "Unified CRM, ERP, Chat and Analytics platform",
-  "start_url": "/",
+  "start_url": "app.html",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#090909",
@@ -14,8 +14,8 @@
   ],
   "screenshots": [],
   "shortcuts": [
-    { "name": "Dashboard", "url": "/?view=dashboard", "description": "Open dashboard" },
-    { "name": "Contacts",  "url": "/?view=contacts",  "description": "Open contacts" },
-    { "name": "Inbox",     "url": "/?view=inbox",     "description": "Open inbox" }
+    { "name": "Dashboard", "url": "app.html?view=dashboard", "description": "Open dashboard" },
+    { "name": "Contacts",  "url": "app.html?view=contacts",  "description": "Open contacts" },
+    { "name": "Inbox",     "url": "app.html?view=inbox",     "description": "Open inbox" }
   ]
 }
