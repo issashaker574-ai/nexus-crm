@@ -246,49 +246,150 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:1
 <div class="toast" id="toast"></div>
 
 <script>
-const ADMIN_PW = 'nexus2026admin';
+// ── Supabase (echte Cloud-Anbindung statt Klartext-Passwort + localStorage) ──
+// Sicherheitshinweis zu den innerHTML-Zuweisungen unten: r.name/r.email/r.company
+// sind Nutzereingaben und werden IMMER über esc() escaped, bevor sie interpoliert
+// werden (unverändert aus der Vorversion übernommen). r.plan_id/r.status laufen
+// nur durch feste Lookup-Objekte (planColors/statusMap), r.id ist eine von Postgres
+// generierte UUID (fester Zeichensatz [a-f0-9-], kann kein Anführungszeichen
+// enthalten), Preise/Datum laufen durch Number()/toLocaleString()/toLocaleDateString().
+const SB_URL      = 'https://ixjpsjmxfqcowdwlexea.supabase.co';
+const SB_ANON     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4anBzam14ZnFjb3dkd2xleGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MTc3MjUsImV4cCI6MjA5NzI5MzcyNX0.8-4NDmWYZMdACPVclpVBlw3EMPEoDFujSRA0GqjpwsE';
+const ADMIN_EMAIL = 'issashaker574@gmail.com';
+const ADMIN_SESSION_KEY = 'nexus-admin-session';
+
 let currentFilter = 'all';
+let _requests = [];
+let _adminSession = null; // {access_token, user_id, role}
+
+function getAdminSession(){
+  try { return JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function saveAdminSession(s){ localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(s)); }
+function clearAdminSession(){ localStorage.removeItem(ADMIN_SESSION_KEY); _adminSession = null; }
+
+// Kleiner fetch-Wrapper: hängt apikey + Bearer-Token an, meldet 401 als Session-Ablauf.
+async function sbFetch(path, opts = {}){
+  const headers = Object.assign({
+    'apikey': SB_ANON,
+    'Content-Type': 'application/json',
+  }, opts.headers || {});
+  if (_adminSession?.access_token) headers['Authorization'] = 'Bearer ' + _adminSession.access_token;
+  const res = await fetch(SB_URL + path, Object.assign({}, opts, { headers }));
+  if (res.status === 401) {
+    clearAdminSession();
+    showLogin();
+    showToast('⏱️ Sitzung abgelaufen — bitte erneut anmelden');
+    throw new Error('session_expired');
+  }
+  return res;
+}
 
 // ── Auth ──
-function doLogin(){
-  const v = document.getElementById('pw').value;
-  if(v === ADMIN_PW){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('dashboard').style.display='block';
-    renderAll();
-  } else {
-    document.getElementById('loginErr').style.display='block';
-    document.getElementById('pw').value='';
-    document.getElementById('pw').focus();
+async function doLogin(){
+  const pw = document.getElementById('pw').value;
+  const btn = document.querySelector('.login-btn');
+  const errEl = document.getElementById('loginErr');
+  errEl.style.display = 'none';
+  if (!pw) return;
+  btn.disabled = true; btn.textContent = '☁️ Prüfe…';
+  try {
+    const authRes = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': SB_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: ADMIN_EMAIL, password: pw })
+    });
+    const authData = await authRes.json();
+    if (!authRes.ok || !authData.access_token) {
+      errEl.textContent = 'Falsches Passwort. Bitte erneut versuchen.';
+      errEl.style.display = 'block';
+      document.getElementById('pw').value = '';
+      document.getElementById('pw').focus();
+      return;
+    }
+    // Rolle prüfen — nur ADMIN/SUPER_ADMIN dürfen rein
+    const roleRes = await fetch(SB_URL + `/rest/v1/users?select=role&id=eq.${authData.user.id}`, {
+      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + authData.access_token }
+    });
+    const roleData = await roleRes.json();
+    const role = roleData?.[0]?.role;
+    if (!['SUPER_ADMIN', 'ADMIN'].includes(role)) {
+      errEl.textContent = 'Dieses Konto hat keine Admin-Berechtigung.';
+      errEl.style.display = 'block';
+      return;
+    }
+    _adminSession = { access_token: authData.access_token, user_id: authData.user.id, role };
+    saveAdminSession(_adminSession);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    await renderAll();
+  } catch(e) {
+    errEl.textContent = 'Verbindungsfehler — bitte erneut versuchen.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Einloggen →';
   }
 }
-function doLogout(){
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('pw').value='';
+
+function showLogin(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pw').value = '';
 }
+
+function doLogout(){
+  clearAdminSession();
+  showLogin();
+}
+
 document.addEventListener('keydown', e => {
   if(e.key==='Enter' && document.getElementById('login-screen').style.display !== 'none')
     doLogin();
 });
 
-// ── Data helpers ──
-function getReqs(){ return JSON.parse(localStorage.getItem('nexus_requests')||'[]'); }
-function saveReqs(list){ localStorage.setItem('nexus_requests', JSON.stringify(list)); }
+// Bereits eingeloggt? (Session aus vorherigem Besuch)
+async function checkExistingSession(){
+  const saved = getAdminSession();
+  if (!saved?.access_token) return;
+  _adminSession = saved;
+  try {
+    const res = await sbFetch('/rest/v1/signup_requests?select=id&limit=1');
+    if (!res.ok) throw new Error('invalid');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    await renderAll();
+  } catch(e) {
+    clearAdminSession();
+  }
+}
 
-function setStatus(id, status){
-  const list = getReqs();
-  const r = list.find(x => x.id == id);
-  if(r) r.status = status;
-  saveReqs(list);
-  renderAll();
+// ── Data (Supabase statt localStorage) ──
+async function fetchRequests(){
+  const res = await sbFetch('/rest/v1/signup_requests?select=*&order=created_at.desc');
+  if (!res.ok) { showToast('⚠️ Anfragen konnten nicht geladen werden'); return; }
+  _requests = await res.json();
+}
+
+async function setStatus(id, status){
+  const patch = { status };
+  if (status === 'approved') {
+    patch.approved_at = new Date().toISOString();
+    patch.approved_by = _adminSession.user_id;
+  }
+  const res = await sbFetch(`/rest/v1/signup_requests?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch)
+  });
+  if (!res.ok) { showToast('⚠️ Aktion fehlgeschlagen'); return; }
+  await renderAll();
   showToast(status === 'approved' ? '✅ Zugang freigegeben!' : '❌ Anfrage abgelehnt');
 }
 
-function deleteReq(id){
-  const list = getReqs().filter(x => x.id != id);
-  saveReqs(list);
-  renderAll();
+async function deleteReq(id){
+  const res = await sbFetch(`/rest/v1/signup_requests?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) { showToast('⚠️ Löschen fehlgeschlagen'); return; }
+  await renderAll();
   showToast('🗑️ Anfrage gelöscht');
 }
 
@@ -299,43 +400,51 @@ function setFilter(f, btn){
   renderTable();
 }
 
-function clearAll(){
-  if(confirm('Wirklich alle Anfragen löschen?')){ saveReqs([]); renderAll(); }
+async function clearAll(){
+  if (!confirm('Wirklich alle Anfragen löschen?')) return;
+  const res = await sbFetch('/rest/v1/signup_requests?id=not.is.null', { method: 'DELETE' });
+  if (!res.ok) { showToast('⚠️ Löschen fehlgeschlagen'); return; }
+  await renderAll();
 }
 
-function addTestEntry(){
+async function addTestEntry(){
   const plans = ['starter','dienstleistung','handel','enterprise'];
-  const migs  = ['Ohne Migration','Starter-Migration','Professional-Migration'];
-  const r = {
-    id: Date.now(),
+  const planNames = { starter:'ERP Starter', dienstleistung:'ERP Dienstleistung', handel:'ERP Handel', enterprise:'Enterprise' };
+  const migs  = [{id:'none',name:'Ohne Migration',price:0}, {id:'starter',name:'Starter-Migration',price:799}, {id:'pro',name:'Professional-Migration',price:1500}];
+  const planId = plans[Math.floor(Math.random()*4)];
+  const mig = migs[Math.floor(Math.random()*3)];
+  const row = {
     name: ['Max Mustermann','Sandra Kühn','Thomas Richter','Anna Weber'][Math.floor(Math.random()*4)],
     email: 'test@beispiel.de',
     company: ['Müller GmbH','TechVentures AG','NordBau','DigiWerk'][Math.floor(Math.random()*4)],
-    plan: ['ERP Starter','ERP Dienstleistung','ERP Handel','Enterprise'][Math.floor(Math.random()*4)],
-    planId: plans[Math.floor(Math.random()*4)],
-    mig: migs[Math.floor(Math.random()*3)],
-    migPrice: [0,799,1500][Math.floor(Math.random()*3)],
-    status: 'pending',
-    ts: new Date().toISOString()
+    plan_id: planId,
+    plan_name: planNames[planId],
+    migration_id: mig.id,
+    migration_name: mig.name,
+    migration_price: mig.price,
+    status: 'pending'
   };
-  const list = getReqs(); list.push(r); saveReqs(list); renderAll();
+  const res = await sbFetch('/rest/v1/signup_requests', { method: 'POST', body: JSON.stringify(row) });
+  if (!res.ok) { showToast('⚠️ Test-Eintrag fehlgeschlagen'); return; }
+  await renderAll();
   showToast('➕ Test-Eintrag hinzugefügt');
 }
 
 // ── Render ──
-function renderAll(){
+async function renderAll(){
+  await fetchRequests();
   renderStats();
   renderTable();
 }
 
 function renderStats(){
-  const list = getReqs();
+  const list = _requests;
   const pending  = list.filter(r => r.status==='pending').length;
   const approved = list.filter(r => r.status==='approved').length;
   const rejected = list.filter(r => r.status==='rejected').length;
   const revenue  = list
     .filter(r => r.status==='approved')
-    .reduce((s,r) => s + (r.migPrice||0), 0);
+    .reduce((s,r) => s + (Number(r.migration_price)||0), 0);
 
   document.getElementById('statsRow').innerHTML = `
     <div class="stat-card">
@@ -359,7 +468,7 @@ function renderStats(){
 
 function renderTable(){
   const search = document.getElementById('searchInput')?.value?.toLowerCase() || '';
-  let list = getReqs();
+  let list = _requests;
 
   if(currentFilter !== 'all') list = list.filter(r => r.status === currentFilter);
   if(search) list = list.filter(r =>
@@ -367,8 +476,6 @@ function renderTable(){
     (r.email||'').toLowerCase().includes(search) ||
     (r.company||'').toLowerCase().includes(search)
   );
-
-  list = list.slice().reverse(); // newest first
 
   const body = document.getElementById('reqBody');
   const empty = document.getElementById('emptyState');
@@ -385,21 +492,20 @@ function renderTable(){
   const statusLabel = { pending:'Ausstehend', approved:'Freigegeben', rejected:'Abgelehnt' };
 
   body.innerHTML = list.map(r => {
-    const planClass = planColors[r.planId] || 'starter';
+    const planClass = planColors[r.plan_id] || 'starter';
     const stClass   = statusMap[r.status] || 'pending';
     const stLabel   = statusLabel[r.status] || r.status;
-    const date = new Date(r.ts).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
-    const time = new Date(r.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-    const migPriceStr = r.migPrice > 0 ? `€${r.migPrice.toLocaleString('de-DE')}` : '—';
-    // Total revenue from this customer
-    const totalRev = (r.migPrice||0);
-    const revStr = totalRev > 0 ? `€${totalRev.toLocaleString('de-DE')}` : '—';
+    const date = new Date(r.created_at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const time = new Date(r.created_at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    const migPrice = Number(r.migration_price) || 0;
+    const migPriceStr = migPrice > 0 ? `€${migPrice.toLocaleString('de-DE')}` : '—';
+    const revStr = migPrice > 0 ? `€${migPrice.toLocaleString('de-DE')}` : '—';
 
     const approveBtn = r.status !== 'approved'
-      ? `<button class="btn-sm btn-green" onclick="approveAndLink(${r.id})">✅ Freigeben</button>` : '';
+      ? `<button class="btn-sm btn-green" onclick="approveAndLink('${r.id}')">✅ Freigeben</button>` : '';
     const rejectBtn = r.status !== 'rejected'
-      ? `<button class="btn-sm btn-red" onclick="setStatus(${r.id},'rejected')">❌ Ablehnen</button>` : '';
-    const delBtn = `<button class="btn-sm btn-outline" onclick="deleteReq(${r.id})">🗑</button>`;
+      ? `<button class="btn-sm btn-red" onclick="setStatus('${r.id}','rejected')">❌ Ablehnen</button>` : '';
+    const delBtn = `<button class="btn-sm btn-outline" onclick="deleteReq('${r.id}')">🗑</button>`;
 
     return `
       <tr>
@@ -408,13 +514,13 @@ function renderTable(){
           <div class="req-email">${esc(r.email)}</div>
           <div class="req-company">${esc(r.company)}</div>
         </td>
-        <td><span class="plan-pill ${planClass}">${esc(r.plan)}</span></td>
+        <td><span class="plan-pill ${planClass}">${esc(r.plan_name)}</span></td>
         <td>
-          ${r.mig && r.mig !== 'Ohne Migration'
-            ? `<span class="mig-pill">${esc(r.mig)}</span><div style="font-size:11px;color:#FBBF24;margin-top:4px;">${migPriceStr}</div>`
+          ${r.migration_name && r.migration_name !== 'Ohne Migration'
+            ? `<span class="mig-pill">${esc(r.migration_name)}</span><div style="font-size:11px;color:#FBBF24;margin-top:4px;">${migPriceStr}</div>`
             : '<span style="color:rgba(255,255,255,.2);font-size:12px;">—</span>'}
         </td>
-        <td><span style="font-size:13px;font-weight:700;color:${totalRev>0?'#34D399':'rgba(255,255,255,.3)'};">${revStr}</span></td>
+        <td><span style="font-size:13px;font-weight:700;color:${migPrice>0?'#34D399':'rgba(255,255,255,.3)'};">${revStr}</span></td>
         <td><span class="status-pill ${stClass}"><span class="status-dot"></span>${stLabel}</span></td>
         <td><div class="req-time">${date}<br>${time}</div></td>
         <td><div class="action-btns">${approveBtn}${rejectBtn}${delBtn}</div></td>
@@ -424,14 +530,12 @@ function renderTable(){
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function approveAndLink(id){
-  setStatus(id, 'approved');
-  // Generate access link with token (relativ zur aktuellen Umgebung — funktioniert
+async function approveAndLink(id){
+  await setStatus(id, 'approved');
+  // Generate access link (relativ zur aktuellen Umgebung — funktioniert
   // lokal, auf GitHub Pages und auf Vercel gleichermaßen, statt fest auf localhost)
-  const token = btoa(`nexus_access_${id}_${Date.now()}`);
   const appUrl = new URL('app.html', location.href).href;
-  const link = `${appUrl}?token=${token}&admin=1`;
-  document.getElementById('accessLinkDisplay').textContent = link;
+  document.getElementById('accessLinkDisplay').textContent = appUrl;
   document.getElementById('accessModal').classList.add('open');
 }
 
@@ -449,7 +553,7 @@ function showToast(msg){
 }
 
 // Init
-renderAll();
+checkExistingSession();
 </script>
 </body>
 </html>

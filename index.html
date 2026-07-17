@@ -2026,17 +2026,6 @@ async function handlePayment(){
   if(pass.length < 8){ payError('Das Passwort braucht mindestens 8 Zeichen (Schritt 2).'); return; }
   if(!document.getElementById('m-agb')?.checked){ payError('Bitte akzeptiere die AGB und Datenschutzerklärung.'); return; }
 
-  // Anfrage lokal speichern (sichtbar in admin.html)
-  const req = {
-    id: Date.now(), name, email, company: company || '—',
-    plan: _plan.name, planId: _plan.id,
-    mig: _mig.name, migPrice: _mig.price,
-    status: 'registered', ts: new Date().toISOString()
-  };
-  const list = JSON.parse(localStorage.getItem('nexus_requests')||'[]');
-  list.push(req);
-  localStorage.setItem('nexus_requests', JSON.stringify(list));
-
   // ── Echte Registrierung via Supabase Auth ──
   const btn = document.getElementById('stripePayBtn');
   const oldLabel = btn.innerHTML;
@@ -2067,6 +2056,25 @@ async function handlePayment(){
       btn.disabled = false; btn.style.opacity = ''; btn.innerHTML = oldLabel;
       return;
     }
+    // Erfolg → Anfrage in Supabase eintragen, damit sie im Admin-Dashboard
+    // geräteübergreifend sichtbar ist (anon darf per RLS genau eine eigene
+    // Zeile mit status='pending' anlegen). Best-effort: Konto steht bereits,
+    // ein Fehler hier darf den Signup-Erfolg nicht blockieren.
+    try {
+      await fetch(SB_URL + '/rest/v1/signup_requests', {
+        method: 'POST',
+        headers: { 'apikey': SB_ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          auth_user_id: d.user?.id || d.id || null,
+          name, email, company: company || null,
+          plan_id: _plan.id, plan_name: _plan.name,
+          migration_id: _mig.id, migration_name: _mig.name, migration_price: _mig.price,
+          billing: annual ? 'yearly' : 'monthly',
+          status: 'pending'
+        })
+      });
+    } catch(e) { console.warn('signup_requests insert:', e); }
+
     // Erfolg → Success-Screen je nach Bestätigungsstatus
     const hasSession = !!(d.access_token || (d.session && d.session.access_token));
     const okTitle = document.getElementById('ok-title');
