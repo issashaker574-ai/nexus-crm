@@ -137,25 +137,6 @@ footer{border-top:1px solid var(--border);padding:48px 40px 32px;max-width:1200p
 .footer-back{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--blue-light);margin-bottom:24px;transition:gap .15s;}
 .footer-back:hover{gap:12px;}
 
-/* ── MODAL ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:2000;align-items:center;justify-content:center;}
-.modal-overlay.open{display:flex;}
-.modal-box{background:#0D0D1F;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:36px;width:100%;max-width:420px;position:relative;box-shadow:0 32px 80px rgba(0,0,0,.6);}
-.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1;transition:color .15s;}
-.modal-close:hover{color:#fff;}
-.modal-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;}
-.modal-sub{font-size:14px;color:var(--text);}
-.field-label{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin:14px 0 6px;letter-spacing:.3px;}
-.field-input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:11px 14px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;}
-.field-input:focus{border-color:rgba(94,106,210,.6);background:rgba(94,106,210,.04);}
-.modal-submit{width:100%;margin-top:18px;padding:13px;background:linear-gradient(135deg,#5E6AD2,#818CF8);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;}
-.modal-submit:hover{opacity:.9;}
-.modal-or{text-align:center;margin:14px 0;font-size:12px;color:rgba(255,255,255,.25);}
-.modal-google{width:100%;padding:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .15s;}
-.modal-google:hover{background:rgba(255,255,255,.1);}
-.modal-demo{text-align:center;margin-top:14px;font-size:11.5px;color:rgba(255,255,255,.25);}
-.modal-demo code{font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,.4);}
-
 /* ── REVEAL ── */
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
 .reveal.visible{opacity:1;transform:none;}
@@ -194,7 +175,7 @@ footer{border-top:1px solid var(--border);padding:48px 40px 32px;max-width:1200p
   </div>
   <div class="nav-right">
     <a class="btn-ghost" href="index.html" data-t="back_landing">← Zurück zur Startseite</a>
-    <a class="btn-cta" href="#" onclick="openModal();return false;" data-t="nav_beta">Beta-Zugang anfragen →</a>
+    <a class="btn-cta" href="index.html?checkout=1" data-t="nav_beta">Beta-Zugang anfragen →</a>
     <button class="btn-lang" id="langBtn" onclick="toggleLang()">EN</button>
   </div>
 </nav>
@@ -334,30 +315,6 @@ footer{border-top:1px solid var(--border);padding:48px 40px 32px;max-width:1200p
 </footer>
 
 <!-- ══ MODAL ══ -->
-<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <div style="text-align:center;margin-bottom:22px;">
-      <div style="width:46px;height:46px;background:linear-gradient(135deg,#5E6AD2,#818CF8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;margin:0 auto 12px;">N</div>
-      <div class="modal-title" data-t="modal_title">Beta-Zugang anfragen</div>
-      <div class="modal-sub" data-t="modal_sub">Noch 47 Plätze — sichern Sie sich jetzt Ihren Zugang</div>
-    </div>
-    <label class="field-label" data-t="modal_name">Name</label>
-    <input class="field-input" type="text" placeholder="Max Mustermann">
-    <label class="field-label" data-t="modal_email">E-Mail-Adresse</label>
-    <input class="field-input" type="email" placeholder="max@beispiel.de">
-    <label class="field-label" data-t="modal_company">Unternehmen</label>
-    <input class="field-input" type="text" placeholder="Musterfirma GmbH">
-    <button class="modal-submit" onclick="goApp()" data-t="modal_submit">Jetzt Beta-Zugang sichern →</button>
-    <div class="modal-or"><span data-t="modal_or">oder direkt einloggen</span></div>
-    <button class="modal-google" onclick="goApp()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      <span data-t="modal_google">Mit Google fortfahren</span>
-    </button>
-    <div class="modal-demo">Demo-Login: <code>issashaker574@gmail.com / nexus2026</code></div>
-  </div>
-</div>
-
 <script>
 // ── Translations ──
 const TR = {
@@ -424,11 +381,7 @@ function toggleLang() {
   rebuildTimeline();
 }
 
-// ── Modal ──
-function openModal(){ document.getElementById('modal').classList.add('open'); document.body.style.overflow='hidden'; }
-function closeModal(){ document.getElementById('modal').classList.remove('open'); document.body.style.overflow=''; }
 function goApp(){ window.location.href = 'app.html'; }
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 
 // ── Scroll reveal ──
 const io = new IntersectionObserver(entries => {

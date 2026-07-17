@@ -1707,7 +1707,7 @@ footer{background:#030308;border-top:1px solid var(--border);padding:60px 48px 3
     <div>
       <div class="footer-col-title" data-t="ft_company">Unternehmen</div>
       <div class="footer-links">
-        <a href="#" data-t="ft_about">Über uns</a>
+        <a href="about.html" data-t="ft_about">Über uns</a>
         <a href="#" onclick="openLegal('blog');return false;" data-t="ft_blog">Blog</a>
         <a href="#" onclick="openLegal('karriere');return false;" data-t="ft_career">Karriere</a>
         <a href="#" onclick="openLegal('presse');return false;" data-t="ft_press">Presse</a>
@@ -1941,6 +1941,13 @@ function closeModal(){
 }
 function goApp(){ window.location.href = 'app.html'; }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// Checkout von anderen Seiten aus öffnen (z.B. about.html), ohne den
+// echten Registrierungs-Flow dort zu duplizieren: index.html?checkout=1
+if (new URLSearchParams(location.search).get('checkout') === '1') {
+  history.replaceState({}, '', location.pathname);
+  window.addEventListener('DOMContentLoaded', openModal);
+}
 
 function selectPlan(id, price, name, el){
   document.querySelectorAll('.plan-mini').forEach(p => p.classList.remove('selected'));
