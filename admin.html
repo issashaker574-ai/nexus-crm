@@ -426,9 +426,11 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 
 function approveAndLink(id){
   setStatus(id, 'approved');
-  // Generate access link with token
+  // Generate access link with token (relativ zur aktuellen Umgebung — funktioniert
+  // lokal, auf GitHub Pages und auf Vercel gleichermaßen, statt fest auf localhost)
   const token = btoa(`nexus_access_${id}_${Date.now()}`);
-  const link = `http://localhost:5500?token=${token}&admin=1`;
+  const appUrl = new URL('app.html', location.href).href;
+  const link = `${appUrl}?token=${token}&admin=1`;
   document.getElementById('accessLinkDisplay').textContent = link;
   document.getElementById('accessModal').classList.add('open');
 }
