@@ -1,0 +1,42 @@
+{
+  "manifest.json": {
+    "mtime": 1783263798.5002174,
+    "ast_hash": "54b33b95ac9f22be2452570a084cda18",
+    "semantic_hash": "54b33b95ac9f22be2452570a084cda18"
+  },
+  "supabase/schema.sql": {
+    "mtime": 1781727347.589388,
+    "ast_hash": "563348bb1c5b6be68078ea486abd328b",
+    "semantic_hash": "563348bb1c5b6be68078ea486abd328b"
+  },
+  "sw.js": {
+    "mtime": 1783263775.3150318,
+    "ast_hash": "c74a3635a877d9b98385c70d4a8dfd0e",
+    "semantic_hash": "c74a3635a877d9b98385c70d4a8dfd0e"
+  },
+  "vercel.json": {
+    "mtime": 1783263805.5161664,
+    "ast_hash": "47f79c1f5a2506bb6d3f6aae7e7c0de1",
+    "semantic_hash": "47f79c1f5a2506bb6d3f6aae7e7c0de1"
+  },
+  "about.html": {
+    "mtime": 1783263751.612813,
+    "ast_hash": "f9bd69ad4088592d4018a4b649e19e8c",
+    "semantic_hash": "f9bd69ad4088592d4018a4b649e19e8c"
+  },
+  "admin.html": {
+    "mtime": 1783263751.609106,
+    "ast_hash": "f8092a5a0f5c7cbead8e2f068907489e",
+    "semantic_hash": "f8092a5a0f5c7cbead8e2f068907489e"
+  },
+  "app.html": {
+    "mtime": 1783284776.354529,
+    "ast_hash": "10c735047a4234a063a0882887c252fe",
+    "semantic_hash": "10c735047a4234a063a0882887c252fe"
+  },
+  "index.html": {
+    "mtime": 1783284788.3903034,
+    "ast_hash": "0a6ee32fe10909d35c71fc6c8eecbba2",
+    "semantic_hash": "0a6ee32fe10909d35c71fc6c8eecbba2"
+  }
+}
