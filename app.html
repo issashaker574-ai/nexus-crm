@@ -3312,7 +3312,7 @@ function saveContact(){
   const avatarColors = ['#3B82F6','#8B5CF6','#06B6D4','#10B981','#F59E0B','#EF4444','#EC4899'];
   const name = fname + (lname?' '+lname:'');
   const newContact = {
-    id: Date.now(), name, avatar: (fname[0]+(lname?lname[0]:'')).toUpperCase(),
+    id: crypto.randomUUID(), name, avatar: (fname[0]+(lname?lname[0]:'')).toUpperCase(),
     color: avatarColors[Math.floor(Math.random()*avatarColors.length)],
     email: document.getElementById('mc-email').value||'—',
     company: document.getElementById('mc-company').value||'—',
@@ -3360,14 +3360,16 @@ function saveDeal(){
   if(!name){ showToast('Deal name is required','info'); return; }
   const stageName = document.getElementById('md-stage').value;
   const col = pipeline.find(p=>p.col===stageName) || pipeline[0];
-  col.deals.unshift({
-    id: Date.now(), name,
+  const newDeal = {
+    id: crypto.randomUUID(), name,
     company: document.getElementById('md-company').value||'—',
     value: parseInt(document.getElementById('md-value').value)||0,
     prob: parseInt(document.getElementById('md-prob').value)||50,
     owner: document.getElementById('md-owner').value,
-    days: 1
-  });
+    days: 0
+  };
+  col.deals.unshift(newDeal);
+  sbUpsertDeal(newDeal, col.col);
   closeModal();
   showToast(`Deal "${name}" added!`, 'success');
   renderView('pipeline');
@@ -3502,7 +3504,7 @@ function saveTemplateEdit(id){
 // ═══════════════════════════════════════════
 const COLORS = ['#3B82F6','#8B5CF6','#06B6D4','#10B981','#F59E0B','#EF4444','#EC4899','#F97316'];
 
-const contacts = [
+var contacts = [
   {id:1,name:'Alexandra Chen',email:'alex.chen@techvision.com',company:'TechVision Inc',role:'CTO',status:'Customer',score:92,stage:'Closed Won',value:48000,avatar:'AC',color:'#3B82F6',last:'2h ago',tags:['Enterprise','Tech']},
   {id:2,name:'Marcus Rivera',email:'m.rivera@globalops.com',company:'GlobalOps',role:'VP Operations',status:'Lead',score:78,stage:'Proposal',value:125000,avatar:'MR',color:'#8B5CF6',last:'1d ago',tags:['Enterprise']},
   {id:3,name:'Priya Sharma',email:'priya@innovatehq.io',company:'InnovateHQ',role:'CEO',status:'Prospect',score:85,stage:'Discovery',value:32000,avatar:'PS',color:'#10B981',last:'3h ago',tags:['Startup','Tech']},
@@ -3515,7 +3517,7 @@ const contacts = [
   {id:10,name:'Luca Rossi',email:'l.rossi@italtech.it',company:'ItalTech',role:'VP Sales',status:'Customer',score:95,stage:'Closed Won',value:300000,avatar:'LR',color:'#EF4444',last:'15m ago',tags:['Enterprise','EU']},
 ];
 
-const pipeline = [
+var pipeline = [
   {col:'Lead',color:'#94A3B8',deals:[
     {id:101,name:'Cloud Migration Suite',company:'InnovateHQ',value:32000,prob:25,owner:'IS',days:3},
     {id:102,name:'Analytics Platform',company:'FutureForge',value:44000,prob:20,owner:'DW',days:7},
@@ -4516,6 +4518,62 @@ async function sbFetchCompanies() {
     .limit(500);
   if (error) { console.warn('sbFetchCompanies:', error.message); return null; }
   return data;
+}
+
+// ── Deals / Pipeline ───────────────────────
+const DEAL_STAGE_COLORS = {
+  'Lead': '#94A3B8', 'Discovery': '#3B82F6', 'Proposal': '#8B5CF6',
+  'Negotiation': '#F59E0B', 'Closed Won': '#10B981'
+};
+const DEAL_STAGE_ORDER = ['Lead', 'Discovery', 'Proposal', 'Negotiation', 'Closed Won'];
+
+async function sbFetchDeals() {
+  const sb = sbClient();
+  if (!sb || !nexusSupabase.enabled) return null;
+  const { data, error } = await sb
+    .from('deals')
+    .select('id,name,company_name,value,probability,stage,owner_initials,created_at')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) { console.warn('sbFetchDeals:', error.message); return null; }
+  return data;
+}
+
+// Baut aus den flachen DB-Zeilen wieder die {col,color,deals[]}-Struktur,
+// die renderPipeline/renderDeals bereits erwarten — keine Änderung an
+// den Render-Funktionen nötig, nur die Datenquelle wechselt.
+function dealsToPipelineShape(rows) {
+  return DEAL_STAGE_ORDER.map(function(stageName) {
+    return {
+      col: stageName,
+      color: DEAL_STAGE_COLORS[stageName],
+      deals: rows.filter(function(r) { return r.stage === stageName; }).map(function(r) {
+        var days = Math.max(0, Math.floor((Date.now() - new Date(r.created_at).getTime()) / 86400000));
+        return {
+          id: r.id, name: r.name, company: r.company_name || '—',
+          value: Number(r.value) || 0, prob: r.probability || 0,
+          owner: r.owner_initials || '—', days: days
+        };
+      })
+    };
+  });
+}
+
+async function sbUpsertDeal(deal, stageName) {
+  const sb = sbClient();
+  if (!sb || !nexusSupabase.enabled) return;
+  // Deals bekommen ihre id immer schon client-seitig via crypto.randomUUID()
+  // (siehe saveDeal) — deshalb hier konsequent upsert() statt insert/update-
+  // Verzweigung, exakt das bereits bewährte Muster aus sbUpsertContact.
+  const row = {
+    id: String(deal.id),
+    name: deal.name, company_name: deal.company !== '—' ? deal.company : null,
+    value: deal.value || 0, probability: deal.prob || 0,
+    stage: stageName, owner_initials: deal.owner || null,
+  };
+  const { error } = await sb.from('deals').upsert(row, { onConflict: 'id' });
+  if (error) console.warn('sbUpsertDeal:', error.message);
 }
 
 // ── POS Transactions ──────────────────────
@@ -5632,7 +5690,7 @@ function renderDashboard(el) {
         ${(()=>{
           var urgency=d=>d.prob*(1/Math.max(d.days,1));
           return pipeline.flatMap(col=>col.deals.map(d=>({...d,stage:col.col,stageColor:col.color}))).sort((a,b)=>urgency(b)-urgency(a)).slice(0,5).map(d=>`
-          <div onclick="openDealProfile(${d.id})" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color .12s;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div onclick="openDealProfile('${d.id}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color .12s;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
             <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
               <span style="font-size:12px;font-weight:600;color:var(--text1);">${d.name}</span>
               <span style="font-size:12px;font-weight:700;font-family:monospace;color:var(--text1);">$${(d.value/1000).toFixed(0)}K</span>
@@ -5843,7 +5901,7 @@ function renderContacts(el) {
           </tr></thead>
           <tbody>
             ${contacts.map(c=>`
-              <tr onclick="openContactPanel(contacts.find(x=>x.id===${c.id}))">
+              <tr onclick="openContactPanel(contacts.find(x=>x.id=='${c.id}'))">
                 <td><div class="td-name">
                   <div class="contact-ava" style="background:${c.color}">${c.avatar}</div>
                   <div><strong>${c.name}</strong><div style="font-size:11px;color:var(--text3);">${c.email}</div></div>
@@ -5872,7 +5930,31 @@ function renderContacts(el) {
 // ═══════════════════════════════════════════
 // PIPELINE
 // ═══════════════════════════════════════════
+// Gemeinsamer Lade-Trigger für Pipeline (Kanban) UND Deals (Tabelle) — beide
+// lesen dasselbe globale `pipeline`, egal welche View zuerst aufgerufen wird,
+// lädt genau einmal pro Session aus Supabase. Markup ist rein statisch
+// (kein Nutzer-Input interpoliert) — gleiches Muster wie bei Contacts.
+function loadPipelineFromCloud(el, thenRender) {
+  if (!nexusSupabase.enabled || !nexusSupabase.url || !nexusSupabase.key || window._sbPipelineLoaded) return false;
+  window._sbPipelineLoaded = true;
+  el.innerHTML = `
+    <div class="section-hd"><div><h2>Sales Pipeline</h2><p style="color:var(--blue);">☁️ Lade aus Cloud…</p></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px;color:var(--text3);">
+      <div style="width:32px;height:32px;border:2.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:lsSpin .7s linear infinite;"></div>
+      <div style="font-size:14px;">Deals werden aus Supabase geladen…</div>
+    </div>`;
+  sbFetchDeals().then(function(rows) {
+    if (rows && rows.length > 0) {
+      pipeline = dealsToPipelineShape(rows);
+      showToast(rows.length + ' Deals aus Cloud geladen ✓', 'success');
+    }
+    thenRender();
+  }).catch(function() { thenRender(); });
+  return true;
+}
+
 function renderPipeline(el) {
+  if (loadPipelineFromCloud(el, function(){ renderPipeline(el); })) return;
   const total = pipeline.reduce((a,col)=>a+col.deals.reduce((b,d)=>b+d.value,0),0);
   el.innerHTML = `
     <div class="section-hd">
@@ -5901,7 +5983,7 @@ function renderPipeline(el) {
           </div>
           <div class="kanban-cards">
             ${col.deals.map(d=>`
-              <div class="deal-card" style="cursor:pointer;" onclick="openDealProfile(${d.id})">
+              <div class="deal-card" style="cursor:pointer;" onclick="openDealProfile('${d.id}')">
                 <div class="deal-card-name">${d.name}</div>
                 <div class="deal-card-company">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -5927,6 +6009,7 @@ function renderPipeline(el) {
 // DEALS
 // ═══════════════════════════════════════════
 function renderDeals(el) {
+  if (loadPipelineFromCloud(el, function(){ renderDeals(el); })) return;
   const allDeals = pipeline.flatMap(col=>col.deals.map(d=>({...d,stage:col.col,stageColor:col.color})));
   el.innerHTML = `
     <div class="section-hd">
@@ -5943,7 +6026,7 @@ function renderDeals(el) {
           <thead><tr><th>Deal Name</th><th>Company</th><th>Value</th><th>Stage</th><th>Probability</th><th>Owner</th><th>Days Active</th></tr></thead>
           <tbody>
             ${allDeals.map(d=>`
-              <tr style="cursor:pointer;" onclick="openDealProfile(${d.id})">
+              <tr style="cursor:pointer;" onclick="openDealProfile('${d.id}')">
                 <td><strong>${d.name}</strong></td>
                 <td>${d.company}</td>
                 <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">$${(d.value/1000).toFixed(0)}K</td>
@@ -5984,7 +6067,7 @@ var DEAL_ACTIVITIES = {
 
 function openDealProfile(id) {
   const all = pipeline.flatMap(col=>col.deals.map(d=>({...d,stage:col.col,stageColor:col.color})));
-  const deal = all.find(d=>d.id===id);
+  const deal = all.find(d=>d.id==id);
   if (!deal) return;
   currentDealId = id;
   window._currentDeal = deal;
@@ -6035,7 +6118,7 @@ function renderDealProfile(el) {
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;">
-        <button class="btn btn-outline btn-sm" onclick="modalEditDeal(${deal.id})">✏️ Bearbeiten</button>
+        <button class="btn btn-outline btn-sm" onclick="modalEditDeal('${deal.id}')">✏️ Bearbeiten</button>
         <button class="btn btn-primary btn-sm" onclick="aiCardLaunch('email draft für ${deal.company}','Email')">✉️ Email</button>
       </div>
     </div>
@@ -6105,8 +6188,8 @@ function renderDealProfile(el) {
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:12px;">Schnellaktionen</div>
             <div style="display:flex;flex-direction:column;gap:7px;">
               <button class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;" onclick="aiCardLaunch('email draft für ${deal.company}','Email')">✉️ Follow-up Email</button>
-              <button class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;" onclick="modalDealNote(${deal.id})">📝 Notiz hinzufügen</button>
-              <button class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;" onclick="modalDealStage(${deal.id})">⬆️ Stage aktualisieren</button>
+              <button class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;" onclick="modalDealNote('${deal.id}')">📝 Notiz hinzufügen</button>
+              <button class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;" onclick="modalDealStage('${deal.id}')">⬆️ Stage aktualisieren</button>
               <button class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;" onclick="modalPaymentLink()">💳 Payment Link</button>
             </div>
           </div>
@@ -6119,7 +6202,7 @@ function renderDealProfile(el) {
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);">Aktivitätsverlauf</div>
-          <button class="btn btn-primary btn-sm" onclick="modalDealActivity(${deal.id})">+ Aktivität</button>
+          <button class="btn btn-primary btn-sm" onclick="modalDealActivity('${deal.id}')">+ Aktivität</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px;">
           ${acts.map(a=>`
@@ -6181,10 +6264,10 @@ function renderDealProfile(el) {
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);">Notizen</div>
-          <button class="btn btn-primary btn-sm" onclick="modalDealNote(${deal.id})">+ Notiz</button>
+          <button class="btn btn-primary btn-sm" onclick="modalDealNote('${deal.id}')">+ Notiz</button>
         </div>
         <textarea id="dp-notes-area" style="width:100%;min-height:160px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text1);font-size:13px;font-family:inherit;resize:vertical;outline:none;" placeholder="Notizen zu diesem Deal eingeben…">${deal.notes||''}</textarea>
-        <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="saveDealNote(${deal.id})">Speichern</button>
+        <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="saveDealNote('${deal.id}')">Speichern</button>
       </div>
     </div>
   `;
@@ -6308,7 +6391,7 @@ function modalDealStage(id) {
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="saveDealStage(${id})">Aktualisieren</button>
+      <button class="btn btn-primary" onclick="saveDealStage('${id}')">Aktualisieren</button>
     </div>
   </div>`);
 }
@@ -6317,12 +6400,13 @@ function saveDealStage(id) {
   const newStage = document.getElementById('ds-stage').value;
   const newProb = parseInt(document.getElementById('ds-prob').value)||50;
   let movedDeal = null;
-  pipeline.forEach(col=>{ const idx=col.deals.findIndex(d=>d.id===id); if(idx>-1){movedDeal=col.deals.splice(idx,1)[0];} });
+  pipeline.forEach(col=>{ const idx=col.deals.findIndex(d=>d.id==id); if(idx>-1){movedDeal=col.deals.splice(idx,1)[0];} });
   if (movedDeal) {
     movedDeal.prob = newProb;
     const targetCol = pipeline.find(col=>col.col===newStage);
     if (targetCol) targetCol.deals.push(movedDeal);
     if (window._currentDeal) window._currentDeal = {...window._currentDeal, stage:newStage, prob:newProb, stageColor: targetCol?.color||'var(--blue)'};
+    sbUpsertDeal(movedDeal, newStage);
   }
   if (!DEAL_ACTIVITIES[id]) DEAL_ACTIVITIES[id]=[];
   DEAL_ACTIVITIES[id].unshift({type:'stage',icon:'⬆️',text:`Stage geändert zu: ${newStage}`,time:'Gerade eben'});
